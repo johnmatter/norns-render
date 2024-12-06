@@ -4,7 +4,9 @@ Shape.__index = Shape
 function Shape:new(vertices, faces)
   local shape = {
     vertices = vertices or {},
-    faces = faces or {}
+    faces = faces or {},
+    rotation = { x = 0, y = 0, z = 0 },
+    scale = 1
   }
   setmetatable(shape, self)
   return shape
@@ -80,6 +82,18 @@ function Shape:rotate(angle, axis)
       z = pz * cos_theta + cross_z * sin_theta + k.z * dot * one_minus_cos + center.z
     }
   end)
+end
+
+function Shape:set_scale(scale)
+  local center = self:get_center()
+  self:transform(function(v)
+    return {
+      x = center.x + (v.x - center.x) * scale,
+      y = center.y + (v.y - center.y) * scale,
+      z = center.z + (v.z - center.z) * scale
+    }
+  end)
+  self.scale = scale
 end
 
 return Shape
