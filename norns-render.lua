@@ -129,6 +129,7 @@ function enc(n, d)
     end
   end
   update_scene()
+  redraw()
 end
 
 function redraw()
