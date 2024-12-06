@@ -22,24 +22,30 @@ local last_main_update = 0
 
 -- Add after other local variables
 local cube
+local param_names = {
+  "posx", "posy", "posz",
+  "rotx", "roty", "rotz",
+  "scale"
+}
 local selected_param = 1
-local param_names = {"pos", "scale", "rotxyz"}
 local param_display = ""
+local fine_step = 0.01
+local coarse_step = 0.1
 
 function init()
   -- Parameters for camera position
   params:add_group("3D Scene", 7)
-  params:add_control("cam_x", "Camera X", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
-  params:add_control("cam_y", "Camera Y", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-30, -1, 'lin', 0.1, -10, "", 0.1))
+  params:add_control("posx", "Position X", controlspec.new(-20, 20, 'lin', fine_step, 0))
+  params:add_control("posy", "Position Y", controlspec.new(-20, 20, 'lin', fine_step, 0))
+  params:add_control("posz", "Position Z", controlspec.new(-30, -1, 'lin', fine_step, -10))
   
   -- Parameters for cube rotation
-  params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
-  params:add_control("rot_y", "Rotation Y", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
-  params:add_control("rot_z", "Rotation Z", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
+  params:add_control("rotx", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', fine_step, 0))
+  params:add_control("roty", "Rotation Y", controlspec.new(-math.pi, math.pi, 'lin', fine_step, 0))
+  params:add_control("rotz", "Rotation Z", controlspec.new(-math.pi, math.pi, 'lin', fine_step, 0))
   
   -- Parameter for cube scale
-  params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', 0.1, 1, "", 0.1))
+  params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', fine_step, 1))
   
   -- Parameter change callback
   params.action_write = function(filename)
@@ -80,54 +86,45 @@ end
 
 function update_scene()
   -- Update camera position
-  camera.x = params:get("cam_x")
-  camera.y = params:get("cam_y")
-  camera.z = params:get("cam_z")
+  camera.x = params:get("posx")
+  camera.y = params:get("posy")
+  camera.z = params:get("posz")
   
   -- Update cube rotation
-  cube:rotate(params:get("rot_x"), {x = 1, y = 0, z = 0})
-  cube:rotate(params:get("rot_y"), {x = 0, y = 1, z = 0})
-  cube:rotate(params:get("rot_z"), {x = 0, y = 0, z = 1})
+  cube:rotate(params:get("rotx"), {x = 1, y = 0, z = 0})
+  cube:rotate(params:get("roty"), {x = 0, y = 1, z = 0})
+  cube:rotate(params:get("rotz"), {x = 0, y = 0, z = 1})
   
   -- Update cube scale
   cube:set_scale(params:get("scale"))
   
   -- Update parameter display
-  if param_names[selected_param] == "pos" then
-    param_display = string.format("pos = %.2f %.2f %.2f", camera.x, camera.y, camera.z)
-  elseif param_names[selected_param] == "scale" then
-    param_display = string.format("scale = %.2f", params:get("scale"))
-  elseif param_names[selected_param] == "rotxyz" then
-    param_display = string.format("rotxyz = %.2f %.2f %.2f", 
-      params:get("rot_x"),
-      params:get("rot_y"),
-      params:get("rot_z"))
-  end
+  local param_name = param_names[selected_param]
+  param_display = string.format("%s = %.2f", param_name, params:get(param_name))
 end
 
 function enc(n, d)
-  if n == 3 then
+  if n == 2 then
     -- Cycle through parameters
     selected_param = util.wrap(selected_param + d, 1, #param_names)
-  elseif n == 1 then
-    -- Adjust first value of selected parameter
-    if param_names[selected_param] == "pos" then
-      params:delta("cam_x", d)
-    elseif param_names[selected_param] == "scale" then
-      params:delta("scale", d)
-    elseif param_names[selected_param] == "rotxyz" then
-      params:delta("rot_x", d)
-    end
-  elseif n == 2 then
-    -- Adjust second value of selected parameter
-    if param_names[selected_param] == "pos" then
-      params:delta("cam_y", d)
-    elseif param_names[selected_param] == "rotxyz" then
-      params:delta("rot_y", d)
-    end
+    update_scene()
+  elseif n == 3 then
+    -- Adjust selected parameter value
+    local param_name = param_names[selected_param]
+    local step = k1_held and coarse_step or fine_step
+    params:delta(param_name, d * step)
+    update_scene()
   end
-  update_scene()
   redraw()
+end
+
+-- Add key function to track K1 state
+local k1_held = false
+
+function key(n, z)
+  if n == 1 then
+    k1_held = z == 1
+  end
 end
 
 function redraw()
