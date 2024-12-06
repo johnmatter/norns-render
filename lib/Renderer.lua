@@ -1,12 +1,20 @@
 Renderer = {}
 Renderer.__index = Renderer
 
+-- Rendering style enum
+Renderer.RenderStyle = {
+  WIREFRAME = "wireframe",
+  DITHERED = "dithered",
+  BRIGHTNESS = "brightness"
+}
+
 function Renderer:new(framebuffer, camera, projection, light)
   local renderer = {
     framebuffer = framebuffer,
     camera = camera,
     projection = projection,
-    light = light
+    light = light,
+    render_style = Renderer.RenderStyle.WIREFRAME
   }
   setmetatable(renderer, self)
   return renderer
@@ -40,9 +48,28 @@ function Renderer:draw_triangle(p1, p2, p3, brightness)
   -- Simple triangle rasterization
   -- TODO: face culling
   local level = math.floor(brightness * 15)
-  self.framebuffer:set_pixel(math.floor(p1.x), math.floor(p1.y), level)
-  self.framebuffer:set_pixel(math.floor(p2.x), math.floor(p2.y), level)
-  self.framebuffer:set_pixel(math.floor(p3.x), math.floor(p3.y), level)
+  
+  if self.render_style == Renderer.RenderStyle.WIREFRAME then
+    -- Draw triangle edges
+    self:draw_line(p1, p2, level)
+    self:draw_line(p2, p3, level)
+    self:draw_line(p3, p1, level)
+    
+  elseif self.render_style == Renderer.RenderStyle.DITHERED then
+    -- Simple dithering pattern based on position and brightness
+    for y = math.min(p1.y, p2.y, p3.y), math.max(p1.y, p2.y, p3.y) do
+      for x = math.min(p1.x, p2.x, p3.x), math.max(p1.x, p2.x, p3.x) do
+        if (x + y) % 2 == 0 then  -- Checkerboard pattern
+          self.framebuffer:set_pixel(math.floor(x), math.floor(y), level)
+        end
+      end
+    end
+    
+  else -- BRIGHTNESS
+    self.framebuffer:set_pixel(math.floor(p1.x), math.floor(p1.y), level)
+    self.framebuffer:set_pixel(math.floor(p2.x), math.floor(p2.y), level)
+    self.framebuffer:set_pixel(math.floor(p3.x), math.floor(p3.y), level)
+  end
 end
 
 function Renderer:project_vertex(vertex)
@@ -78,12 +105,33 @@ end
 
 function Renderer:render_shape(shape)
   for _, face in ipairs(shape.faces) do
+    for _, vertex in ipairs(face) do
+      print(vertex)
+    end
     self:draw_face(shape.vertices, face)
   end
 end
 
 function Renderer:render()
   self.framebuffer:render()
+end
+
+function Renderer:draw_line(p1, p2, brightness)
+  local dx = p2.x - p1.x
+  local dy = p2.y - p1.y
+  local steps = math.max(math.abs(dx), math.abs(dy))
+  
+  local x_inc = dx / steps
+  local y_inc = dy / steps
+  
+  local x = p1.x
+  local y = p1.y
+  
+  for i = 0, steps do
+    self.framebuffer:set_pixel(math.floor(x), math.floor(y), brightness)
+    x = x + x_inc
+    y = y + y_inc
+  end
 end
 
 return Renderer

@@ -10,12 +10,12 @@ local projection = { fov = 1, center_x = 64, center_y = 32 }
 local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(framebuffer, camera, projection, light)
 
--- Add these near the top with other globals
+-- Frame rate throttling
 local fps = 30
 local last_redraw = 0
 
 function init()
-  -- declare a cube
+  -- a cube
   local cube = Shape:new(
   {
     { x = -1, y = -1, z = -1 },
