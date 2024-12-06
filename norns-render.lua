@@ -1,7 +1,7 @@
-local Framebuffer = include("lib.framebuffer")
-local Shape = include("lib.shape")
-local Renderer = include("lib.renderer")
-local Light = include("lib.light")
+local Framebuffer = include("lib/Framebuffer")
+local Shape = include("lib/Shape")
+local Renderer = include("lib/Renderer")
+local Light = include("lib/Light")
 
 local framebuffer = Framebuffer:new(128, 64)
 local camera = { x = 0, y = 0, z = -10 }

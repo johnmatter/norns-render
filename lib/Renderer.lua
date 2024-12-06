@@ -48,3 +48,5 @@ function Renderer:render_shape(shape)
     self:draw_face(shape.vertices, face)
   end
 end
+
+return Renderer

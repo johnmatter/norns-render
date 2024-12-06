@@ -15,3 +15,5 @@ function Light:calculate_normal_lighting(normal)
   local dot = math.max(0, normal.x * self.direction.x + normal.y * self.direction.y + normal.z * self.direction.z)
   return self.ambient + self.diffuse * dot
 end
+
+return Light

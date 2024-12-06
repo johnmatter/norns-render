@@ -43,3 +43,5 @@ function Framebuffer:render_to_screen()
   end
   screen.update()
 end
+
+return Framebuffer

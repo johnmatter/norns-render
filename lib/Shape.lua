@@ -15,3 +15,5 @@ function Shape:transform(transform_fn)
     self.vertices[i] = transform_fn(vertex)
   end
 end
+
+return Shape
