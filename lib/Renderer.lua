@@ -12,6 +12,40 @@ function Renderer:new(framebuffer, camera, projection, light)
   return renderer
 end
 
+function Renderer:calculate_normal(v1, v2, v3)
+  -- Calculate vectors from v1 to v2 and v1 to v3
+  local ax = v2.x - v1.x
+  local ay = v2.y - v1.y
+  local az = v2.z - v1.z
+  
+  local bx = v3.x - v1.x
+  local by = v3.y - v1.y
+  local bz = v3.z - v1.z
+  
+  -- Calculate cross product
+  local nx = ay * bz - az * by
+  local ny = az * bx - ax * bz
+  local nz = ax * by - ay * bx
+  
+  -- Normalize
+  local length = math.sqrt(nx * nx + ny * ny + nz * nz)
+  return {
+    x = nx / length,
+    y = ny / length,
+    z = nz / length
+  }
+end
+
+function Renderer:draw_triangle(p1, p2, p3, brightness)
+  -- Simple triangle rasterization
+  -- This is a basic implementation - you might want to improve it
+  local level = math.floor(brightness * 15)
+  self.framebuffer:set_pixel(math.floor(p1.x), math.floor(p1.y), level)
+  self.framebuffer:set_pixel(math.floor(p2.x), math.floor(p2.y), level)
+  self.framebuffer:set_pixel(math.floor(p3.x), math.floor(p3.y), level)
+end
+
+
 function Renderer:project_vertex(vertex)
   -- Translate to camera space
   local x = vertex.x - self.camera.x
@@ -36,11 +70,11 @@ function Renderer:draw_face(vertices, face)
   local p3 = self:project_vertex(v3)
 
   -- Calculate normal and lighting
-  local normal = calculate_normal(v1, v2, v3)
+  local normal = self:calculate_normal(v1, v2, v3)
   local brightness = self.light:calculate_normal_lighting(normal)
 
   -- Rasterize triangle
-  draw_triangle(self.framebuffer, p1, p2, p3, brightness)
+  self:draw_triangle(p1, p2, p3, brightness)
 end
 
 function Renderer:render_shape(shape)
