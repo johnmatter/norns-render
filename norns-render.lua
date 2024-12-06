@@ -30,7 +30,7 @@ local param_names = {
 local selected_param = 1
 local param_display = ""
 local fine_step = 0.01
-local coarse_step = 0.1
+local coarse_step = 5.0
 
 function init()
   -- Parameters for camera position
@@ -55,14 +55,14 @@ function init()
   -- Create cube and scenes as before
   cube = Shape:new(
   {
-    { x = -1, y = -1, z = -1 },
-    { x =  1, y = -1, z = -1 },
-    { x =  1, y =  1, z = -1 },
-    { x = -1, y =  1, z = -1 },
-    { x = -1, y = -1, z =  1 },
-    { x =  1, y = -1, z =  1 },
-    { x =  1, y =  1, z =  1 },
-    { x = -1, y =  1, z =  1 },
+    { x = -10, y = -10, z = -10 },
+    { x =  10, y = -10, z = -10 },
+    { x =  10, y =  10, z = -10 },
+    { x = -10, y =  10, z = -10 },
+    { x = -10, y = -10, z =  10 },
+    { x =  10, y = -10, z =  10 },
+    { x =  10, y =  10, z =  10 },
+    { x = -10, y =  10, z =  10 },
   },
   {
     { 1, 2, 3, 4 }, -- Back face
