@@ -39,6 +39,7 @@ function Framebuffer:render()
     for x = 1, self.width do
       screen.level(self.data[y][x])
       screen.pixel(x - 1, y - 1)
+      screen.fill()
     end
   end
   screen.update()

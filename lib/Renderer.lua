@@ -38,13 +38,12 @@ end
 
 function Renderer:draw_triangle(p1, p2, p3, brightness)
   -- Simple triangle rasterization
-  -- This is a basic implementation - you might want to improve it
+  -- TODO: face culling
   local level = math.floor(brightness * 15)
   self.framebuffer:set_pixel(math.floor(p1.x), math.floor(p1.y), level)
   self.framebuffer:set_pixel(math.floor(p2.x), math.floor(p2.y), level)
   self.framebuffer:set_pixel(math.floor(p3.x), math.floor(p3.y), level)
 end
-
 
 function Renderer:project_vertex(vertex)
   -- Translate to camera space

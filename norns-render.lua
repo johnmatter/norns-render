@@ -9,8 +9,9 @@ local projection = { fov = 1, center_x = 64, center_y = 32 }
 local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(framebuffer, camera, projection, light)
 
--- declare a cube
-local cube = Shape:new(
+function init()
+  -- declare a cube
+  local cube = Shape:new(
   {
     { x = -1, y = -1, z = -1 },
     { x =  1, y = -1, z = -1 },
@@ -30,5 +31,15 @@ local cube = Shape:new(
     { 2, 3, 7, 6 }, -- Bottom face
   }
 )
-renderer:render_shape(cube)
-renderer:render()
+  renderer:render_shape(cube)
+  renderer:render()
+end
+
+function redraw()
+  screen.clear()
+  renderer:render()
+  screen.update()
+end
+
+function cleanup()
+end
