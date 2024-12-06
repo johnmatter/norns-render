@@ -130,4 +130,20 @@ function Renderer:draw_line(p1, p2, brightness)
   screen.stroke()
 end
 
+function Renderer:render_scene(scene)
+  local previous_style = self.render_style
+  
+  -- Use scene-specific render style if specified
+  if scene.render_style then
+    self.render_style = scene.render_style
+  end
+  
+  for _, shape in ipairs(scene.objects) do
+    self:render_shape(shape)
+  end
+  
+  -- Restore previous render style
+  self.render_style = previous_style
+end
+
 return Renderer
