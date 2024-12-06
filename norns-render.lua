@@ -18,9 +18,7 @@ local main_scene = Scene:new()
 local overlay_scene = Scene:new()
 
 local main_scene_fps = 30
-local overlay_fps = 60
 local last_main_update = 0
-local last_overlay_update = 0
 
 -- Add after other local variables
 local cube
@@ -139,13 +137,8 @@ function redraw()
   if current_time - last_main_update >= (1 / main_scene_fps) then
     screen.clear()
     renderer:render_scene(main_scene)
-    last_main_update = current_time
-  end
-  
-  -- Update overlay at 60 fps
-  if current_time - last_overlay_update >= (1 / overlay_fps) then
     renderer:render_scene(overlay_scene)
-    last_overlay_update = current_time
+    last_main_update = current_time
   end
   
   screen.update()
