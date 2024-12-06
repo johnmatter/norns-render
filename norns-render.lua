@@ -1,14 +1,12 @@
-local Framebuffer = include("lib/Framebuffer")
 local Light = include("lib/Light")
 local Renderer = include("lib/Renderer")
 local Shape = include("lib/Shape")
 local Vector = include("lib/Vector")
 
-local framebuffer = Framebuffer:new(128, 64)
 local camera = { x = 0, y = 0, z = -20 }
 local projection = { fov = 1, center_x = 64, center_y = 32 }
 local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
-local renderer = Renderer:new(framebuffer, camera, projection, light)
+local renderer = Renderer:new(camera, projection, light)
 
 -- Frame rate throttling
 local fps = 30
