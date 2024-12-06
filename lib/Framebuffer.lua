@@ -34,7 +34,6 @@ function Framebuffer:clear()
 end
 
 function Framebuffer:render()
-  screen.clear()
   for y = 1, self.height do
     for x = 1, self.width do
       screen.level(self.data[y][x])
@@ -42,7 +41,6 @@ function Framebuffer:render()
       screen.fill()
     end
   end
-  screen.update()
 end
 
 return Framebuffer

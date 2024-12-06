@@ -1,13 +1,18 @@
 local Framebuffer = include("lib/Framebuffer")
-local Shape = include("lib/Shape")
-local Renderer = include("lib/Renderer")
 local Light = include("lib/Light")
+local Renderer = include("lib/Renderer")
+local Shape = include("lib/Shape")
+local Vector = include("lib/Vector")
 
 local framebuffer = Framebuffer:new(128, 64)
-local camera = { x = 0, y = 0, z = -10 }
+local camera = { x = 0, y = 0, z = -20 }
 local projection = { fov = 1, center_x = 64, center_y = 32 }
 local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(framebuffer, camera, projection, light)
+
+-- Add these near the top with other globals
+local fps = 30
+local last_redraw = 0
 
 function init()
   -- declare a cube
@@ -36,6 +41,13 @@ function init()
 end
 
 function redraw()
+  -- Throttle frame rate
+  local current_time = util.time()
+  if current_time - last_redraw < (1 / fps) then
+    return
+  end
+  last_redraw = current_time
+
   screen.clear()
   renderer:render()
   screen.update()
