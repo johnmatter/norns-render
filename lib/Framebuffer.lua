@@ -33,7 +33,7 @@ function Framebuffer:clear()
   end
 end
 
-function Framebuffer:render_to_screen()
+function Framebuffer:render()
   screen.clear()
   for y = 1, self.height do
     for x = 1, self.width do

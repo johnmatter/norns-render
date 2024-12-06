@@ -83,4 +83,8 @@ function Renderer:render_shape(shape)
   end
 end
 
+function Renderer:render()
+  self.framebuffer:render()
+end
+
 return Renderer

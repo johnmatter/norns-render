@@ -30,5 +30,5 @@ local cube = Shape:new(
     { 2, 3, 7, 6 }, -- Bottom face
   }
 )
-renderer:draw_shape(cube)
+renderer:render_shape(cube)
 renderer:render()
