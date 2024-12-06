@@ -133,20 +133,21 @@ end
 function redraw()
   local current_time = util.time()
   
+  screen.clear()
+  
   -- Update main scene at 30 fps
   if current_time - last_main_update >= (1 / main_scene_fps) then
-    screen.clear()
     renderer:render_scene(main_scene)
     renderer:render_scene(overlay_scene)
     last_main_update = current_time
   end
   
-  screen.update()
-  
-  -- Add to existing redraw function
+  -- Always draw parameter text
   screen.move(127, 7)
   screen.level(15)
   screen.text_right(param_display)
+  
+  screen.update()
 end
 
 function cleanup()
