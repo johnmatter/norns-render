@@ -89,7 +89,7 @@ function init()
   -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
   -- Add to parameters group first
-  params:add_option("control_scheme", "Control Scheme", {"Gamepad", "Norns"}, 1)
+  params:add_option("control_scheme", "Control Scheme", {"Gamepad", "Norns"}, 2)
   params:set_action("control_scheme", function(value)
     if value == 1 then
       active_controller = ProController:new()
@@ -98,24 +98,33 @@ function init()
     end
   end)
   
-  -- Initialize with default controller
-  active_controller = ProController:new()
+  -- Initialize with Norns controller by default
+  active_controller = NornsController:new()
   
-  -- Setup gamepad callback after controller initialization
+  -- Setup gamepad callback in a protected call
   if gamepad then
-    gamepad.add_callback(function(id, action, value)
-      if action == 'add' then
-        print("gamepad " .. id .. " added")
-        if active_controller.connect then
-          active_controller:connect(id)
+    local success, err = pcall(function()
+      gamepad.init()  -- Try initializing gamepad module first
+      gamepad.add_callback(function(id, action, value)
+        if action == 'add' then
+          print("gamepad " .. id .. " added")
+          if active_controller.connect then
+            active_controller:connect(id)
+          end
+        elseif action == 'remove' then
+          print("gamepad " .. id .. " removed")
+          if active_controller.disconnect then
+            active_controller:disconnect()
+          end
         end
-      elseif action == 'remove' then
-        print("gamepad " .. id .. " removed")
-        if active_controller.disconnect then
-          active_controller:disconnect()
-        end
-      end
+      end)
     end)
+    
+    if not success then
+      print("Gamepad initialization failed: " .. tostring(err))
+      -- Ensure we're using Norns controls if gamepad fails
+      params:set("control_scheme", 2)
+    end
   end
   
   update_scene()
