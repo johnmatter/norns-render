@@ -29,9 +29,9 @@ local param_display = ""
 function init()
   -- Parameters for camera position
   params:add_group("3D Scene", 7)
-  params:add_control("cam_x", "Camera X", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
-  params:add_control("cam_y", "Camera Y", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-20, 20, 'lin', 0.1, -10, "", 0.1))
+  params:add_control("cam_x", "Camera X", controlspec.new(-20, 20, 'lin', 0.01, 0, "", 0.01))
+  params:add_control("cam_y", "Camera Y", controlspec.new(-20, 20, 'lin', 0.01, 0, "", 0.01))
+  params:add_control("cam_z", "Camera Z", controlspec.new(-20, 20, 'lin', 0.01, -10, "", 0.01))
   
   -- Parameters for cube rotation
   params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
@@ -39,7 +39,7 @@ function init()
   params:add_control("rot_z", "Rotation Z", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
   
   -- Parameter for cube scale
-  params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', 0.1, 1, "", 0.1))
+  params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', 0.01, 1, "", 0.01))
   
   -- Parameter change callback
   params.action_write = function(filename)
@@ -49,14 +49,14 @@ function init()
   -- Create cube and scenes as before
   cube = Shape:new(
   {
-    { x = -1, y = -1, z = -1 },
-    { x =  1, y = -1, z = -1 },
-    { x =  1, y =  1, z = -1 },
-    { x = -1, y =  1, z = -1 },
-    { x = -1, y = -1, z =  1 },
-    { x =  1, y = -1, z =  1 },
-    { x =  1, y =  1, z =  1 },
-    { x = -1, y =  1, z =  1 },
+    { x = -5, y = -5, z = -5 },
+    { x =  5, y = -5, z = -5 },
+    { x =  5, y =  5, z = -5 },
+    { x = -5, y =  5, z = -5 },
+    { x = -5, y = -5, z =  5 },
+    { x =  5, y = -5, z =  5 },
+    { x =  5, y =  5, z =  5 },
+    { x = -5, y =  5, z =  5 },
   },
   {
     { 1, 2, 3, 4 }, -- Back face
