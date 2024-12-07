@@ -41,9 +41,33 @@ local param_display = ""
 local camera_rotation = { x = 0, y = 0 }
 local active_controller
 local rotation_lfos = {
-  x = lfo:new(),
-  y = lfo:new(),
-  z = lfo:new()
+  x = lfo.new(
+    'sine',           -- shape
+    -math.pi/4,       -- min
+    math.pi/4,        -- max
+    1,                -- depth
+    'free',           -- mode
+    100,              -- period (in seconds)
+    nil               -- no action needed, we'll read values directly
+  ),
+  y = lfo.new(
+    'sine',
+    -math.pi/4,
+    math.pi/4,
+    1,
+    'free',
+    150,
+    nil
+  ),
+  z = lfo.new(
+    'sine',
+    -math.pi/4,
+    math.pi/4,
+    1,
+    'free',
+    200,
+    nil
+  )
 }
 local redraw_clock
 
@@ -150,22 +174,23 @@ function init()
   
   -- Configure LFOs
   for axis, lfo_obj in pairs(rotation_lfos) do
-    lfo_obj:set('shape', params:get("lfo_"..axis.."_shape"))
-    lfo_obj:set('period', 1/params:get("lfo_"..axis.."_freq"))
-    lfo_obj:set('depth', params:get("lfo_"..axis.."_depth"))
+    lfo_obj.min = -params:get("lfo_"..axis.."_depth")
+    lfo_obj.max = params:get("lfo_"..axis.."_depth")
+    lfo_obj.shape = params:get("lfo_"..axis.."_shape")
+    lfo_obj.period = 1/params:get("lfo_"..axis.."_freq")
     lfo_obj:start()
   end
   
-  -- Add LFO parameter actions
+  -- Modify LFO parameter actions
   for axis in pairs(rotation_lfos) do
     params:set_action("lfo_"..axis.."_shape", function(value)
-      rotation_lfos[axis]:set('shape', value)
+      rotation_lfos[axis].shape = value
     end)
     params:set_action("lfo_"..axis.."_freq", function(value)
-      rotation_lfos[axis]:set('period', 1/value)
+      rotation_lfos[axis].period = 1/value
     end)
     params:set_action("lfo_"..axis.."_depth", function(value)
-      rotation_lfos[axis]:set('depth', value)
+      rotation_lfos[axis].depth = value
     end)
   end
   
@@ -205,9 +230,9 @@ function update_scene()
   camera.z = params:get("cam_z")
   
   -- Update cube rotation using LFOs
-  cube:rotate(rotation_lfos.x:process(), {x = 1, y = 0, z = 0})
-  cube:rotate(rotation_lfos.y:process(), {x = 0, y = 1, z = 0})
-  cube:rotate(rotation_lfos.z:process(), {x = 0, y = 0, z = 1})
+  cube:rotate(rotation_lfos.x(), {x = 1, y = 0, z = 0})
+  cube:rotate(rotation_lfos.y(), {x = 0, y = 1, z = 0})
+  cube:rotate(rotation_lfos.z(), {x = 0, y = 0, z = 1})
   
   -- Update cube scale
   cube:set_scale(params:get("scale"))
