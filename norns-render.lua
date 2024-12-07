@@ -24,14 +24,14 @@ local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(camera, projection, light)
 
 -- Frame rate throttling
-local fps = 30
+local fps = 15
 local last_redraw = 0
 
 -- Create scenes for different purposes
 local main_scene = Scene:new()
 local overlay_scene = Scene:new()
 
-local main_scene_fps = 30
+local main_scene_fps = 15
 local last_main_update = 0
 
 -- Add after other local variables
