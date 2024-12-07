@@ -3,9 +3,16 @@ local Renderer = include("lib/Renderer")
 local Shape = include("lib/Shape")
 local Vector = include("lib/Vector")
 local Scene = include("lib/Scene")
+local Projection = include("lib/Projection")
 
 local camera = { x = 0, y = 0, z = -10 }
-local projection = { fov = 1, center_x = 64, center_y = 32 }
+local projection = Projection:new(
+  128,  -- screen width
+  64,   -- screen height
+  60,   -- FOV in degrees
+  0.1,  -- near plane
+  100   -- far plane
+)
 local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(camera, projection, light)
 

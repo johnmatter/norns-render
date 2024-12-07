@@ -86,10 +86,7 @@ function Renderer:project_vertex(vertex)
   local z = vertex.z - self.camera.z
 
   -- Apply projection
-  local screen_x = x / -z * self.projection.fov + self.projection.center_x
-  local screen_y = y / -z * self.projection.fov + self.projection.center_y
-
-  return { x = screen_x, y = screen_y }
+  return self.projection:project_point(x, y, z)
 end
 
 function Renderer:draw_face(vertices, face)
