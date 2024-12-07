@@ -10,6 +10,7 @@ local NornsController = include('lib/controllers/NornsController')
 local KeyboardController = include('lib/controllers/KeyboardController')
 local lfo = require('lfo')
 local clock = require('clock')
+local metro = require('metro')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -206,14 +207,15 @@ function init()
   update_scene()
   
   -- Start the redraw clock at the end of init
-  redraw_clock = clock.run(
-    function()
-      while true do
-        clock.sleep(1/fps)  -- fps is 30
-        redraw()
-      end
+  redraw_clock = metro.init(function()
+    local menu_status = norns.menu.status()
+    if not menu_status then
+      -- Only redraw if we're not in the menu
+      redraw()
     end
-  )
+  end, 1/fps, -1)  -- fps is 30, -1 means run indefinitely
+  
+  redraw_clock:start()
 end
 
 function update_scene()
@@ -288,5 +290,5 @@ function redraw()
 end
 
 function cleanup()
-  clock.cancel(redraw_clock)
+  metro.cancel(redraw_clock)
 end
