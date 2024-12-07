@@ -134,17 +134,17 @@ function init()
   params:add_group("Rotation LFOs", 9)
   
   -- X rotation LFO
-  params:add_option("lfo_x_shape", "X LFO Shape", lfo.options.shape, 1)
+  params:add_option("lfo_x_shape", "X LFO Shape", {"sine", "tri", "square", "random"}, 1)
   params:add_control("lfo_x_freq", "X LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.01, 'hz'))
   params:add_control("lfo_x_depth", "X LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
   
   -- Y rotation LFO
-  params:add_option("lfo_y_shape", "Y LFO Shape", lfo.options.shape, 1)
+  params:add_option("lfo_y_shape", "Y LFO Shape", {"sine", "tri", "square", "random"}, 1)
   params:add_control("lfo_y_freq", "Y LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.015, 'hz'))
   params:add_control("lfo_y_depth", "Y LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
   
   -- Z rotation LFO
-  params:add_option("lfo_z_shape", "Z LFO Shape", lfo.options.shape, 1)
+  params:add_option("lfo_z_shape", "Z LFO Shape", {"sine", "tri", "square", "random"}, 1)
   params:add_control("lfo_z_freq", "Z LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.02, 'hz'))
   params:add_control("lfo_z_depth", "Z LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
   
