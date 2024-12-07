@@ -4,6 +4,7 @@ local Shape = include("lib/Shape")
 local Vector = include("lib/Vector")
 local Scene = include("lib/Scene")
 local Projection = include("lib/Projection")
+local ProController = include('lib/controllers/ProController')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -32,6 +33,8 @@ local cube
 local selected_param = 1
 local param_names = {"pos", "scale", "rotxyz"}
 local param_display = ""
+local controller = ProController:new()
+local camera_rotation = { x = 0, y = 0 }
 
 function init()
   -- Parameters for camera position
@@ -83,9 +86,29 @@ function init()
   -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
   update_scene()
+  
+  gamepad.add_callback(function(id, action, value)
+    if action == 'add' then
+      print("gamepad " .. id .. " added")
+      controller:connect(id)
+    elseif action == 'remove' then
+      print("gamepad " .. id .. " removed")
+      controller:disconnect()
+    end
+  end)
 end
 
 function update_scene()
+  -- Update controller state
+  controller:update()
+  
+  -- Get camera movement from controller
+  local dx, dz = controller:update_camera(camera, camera_rotation)
+  if dx and dz then
+    params:set("cam_x", params:get("cam_x") + dx)
+    params:set("cam_z", params:get("cam_z") + dz)
+  end
+  
   -- Update camera position
   camera.x = params:get("cam_x")
   camera.y = params:get("cam_y")
