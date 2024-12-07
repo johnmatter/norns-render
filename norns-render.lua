@@ -151,8 +151,8 @@ function init()
   -- Configure LFOs
   for axis, lfo_obj in pairs(rotation_lfos) do
     lfo_obj:set('shape', params:get("lfo_"..axis.."_shape"))
-    lfo_obj:set('freq', params:get("lfo_"..axis.."_freq"))
-    lfo_obj:set('depth', params:get("lfo_"..axis.."_depth"))
+    lfo_obj:set('frequency', params:get("lfo_"..axis.."_freq"))
+    lfo_obj:set('amplitude', params:get("lfo_"..axis.."_depth"))
     lfo_obj:start()
   end
   
@@ -162,10 +162,10 @@ function init()
       rotation_lfos[axis]:set('shape', value)
     end)
     params:set_action("lfo_"..axis.."_freq", function(value)
-      rotation_lfos[axis]:set('freq', value)
+      rotation_lfos[axis]:set('frequency', value)
     end)
     params:set_action("lfo_"..axis.."_depth", function(value)
-      rotation_lfos[axis]:set('depth', value)
+      rotation_lfos[axis]:set('amplitude', value)
     end)
   end
   
