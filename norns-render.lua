@@ -6,6 +6,7 @@ local Vector = include("lib/Vector")
 local Scene = include("lib/Scene")
 local Projection = include("lib/Projection")
 local ProController = include('lib/controllers/ProController')
+local NornsController = include('lib/controllers/NornsController')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -36,6 +37,7 @@ local param_names = {"pos", "scale", "rotxyz"}
 local param_display = ""
 local controller = ProController:new()
 local camera_rotation = { x = 0, y = 0 }
+local active_controller
 
 function init()
   -- Parameters for camera position
@@ -97,6 +99,19 @@ function init()
       controller:disconnect()
     end
   end)
+  
+  -- Add to parameters group
+  params:add_option("control_scheme", "Control Scheme", {"Gamepad", "Norns"}, 1)
+  params:set_action("control_scheme", function(value)
+    if value == 1 then
+      active_controller = ProController:new()
+    else
+      active_controller = NornsController:new()
+    end
+  end)
+  
+  -- Initialize with default controller
+  active_controller = ProController:new()
 end
 
 function update_scene()
@@ -143,44 +158,17 @@ function update_scene()
 end
 
 function key(n, z)
-  -- K2/K3 cycle through parameters
-  if z == 1 and n == 2 then
-    selected_param = util.wrap(selected_param + 1, 1, #param_names)
-    update_scene()
-  elseif z == 1 and n == 3 then
-    selected_param = util.wrap(selected_param - 1, 1, #param_names)
+  if active_controller.key then
+    active_controller:key(n, z)
     update_scene()
   end
 end
 
 function enc(n, d)
-  -- Adjust first value of selected parameter
-  if n == 1 then
-    if param_names[selected_param] == "pos" then
-      params:delta("cam_x", d)
-    elseif param_names[selected_param] == "scale" then
-      params:delta("scale", d)
-    elseif param_names[selected_param] == "rotxyz" then
-      params:delta("rot_x", d)
-    end
-
-  -- Adjust second value of selected parameter
-  elseif n == 2 then
-    if param_names[selected_param] == "pos" then
-      params:delta("cam_y", d)
-    elseif param_names[selected_param] == "rotxyz" then
-      params:delta("rot_y", d)
-    end
-
-  -- Adjust third value of selected parameter
-  elseif n == 3 then
-    if param_names[selected_param] == "pos" then
-      params:delta("cam_z", d)
-    elseif param_names[selected_param] == "rotxyz" then
-      params:delta("rot_z", d)
-    end
+  if active_controller.enc then
+    active_controller:enc(n, d)
+    update_scene()
   end
-  redraw()
 end
 
 function redraw()
