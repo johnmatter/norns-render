@@ -1,11 +1,11 @@
-local InputController = include('lib/controllers/InputController')
+local ControllerBase = include('lib/controllers/ControllerBase')
 
 NornsController = {}
 NornsController.__index = NornsController
-setmetatable(NornsController, {__index = InputController})
+setmetatable(NornsController, {__index = ControllerBase})
 
 function NornsController:new()
-  local controller = InputController:new()
+  local controller = ControllerBase:new()
   controller.k2_held = false
   controller.k3_held = false
   setmetatable(controller, NornsController)

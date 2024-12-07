@@ -88,19 +88,7 @@ function init()
   main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
-  update_scene()
-  
-  gamepad.add_callback(function(id, action, value)
-    if action == 'add' then
-      print("gamepad " .. id .. " added")
-      controller:connect(id)
-    elseif action == 'remove' then
-      print("gamepad " .. id .. " removed")
-      controller:disconnect()
-    end
-  end)
-  
-  -- Add to parameters group
+  -- Add to parameters group first
   params:add_option("control_scheme", "Control Scheme", {"Gamepad", "Norns"}, 1)
   params:set_action("control_scheme", function(value)
     if value == 1 then
@@ -112,6 +100,25 @@ function init()
   
   -- Initialize with default controller
   active_controller = ProController:new()
+  
+  -- Setup gamepad callback after controller initialization
+  if gamepad then
+    gamepad.add_callback(function(id, action, value)
+      if action == 'add' then
+        print("gamepad " .. id .. " added")
+        if active_controller.connect then
+          active_controller:connect(id)
+        end
+      elseif action == 'remove' then
+        print("gamepad " .. id .. " removed")
+        if active_controller.disconnect then
+          active_controller:disconnect()
+        end
+      end
+    end)
+  end
+  
+  update_scene()
 end
 
 function update_scene()
