@@ -205,9 +205,9 @@ function update_scene()
   camera.z = params:get("cam_z")
   
   -- Update cube rotation using LFOs
-  cube:rotate(rotation_lfos.x(), {x = 1, y = 0, z = 0})
-  cube:rotate(rotation_lfos.y(), {x = 0, y = 1, z = 0})
-  cube:rotate(rotation_lfos.z(), {x = 0, y = 0, z = 1})
+  cube:rotate(rotation_lfos.x:process(), {x = 1, y = 0, z = 0})
+  cube:rotate(rotation_lfos.y:process(), {x = 0, y = 1, z = 0})
+  cube:rotate(rotation_lfos.z:process(), {x = 0, y = 0, z = 1})
   
   -- Update cube scale
   cube:set_scale(params:get("scale"))
