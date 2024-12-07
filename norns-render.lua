@@ -1,3 +1,4 @@
+local gamepad = require('gamepad')
 local Light = include("lib/Light")
 local Renderer = include("lib/Renderer")
 local Shape = include("lib/Shape")
@@ -99,14 +100,19 @@ function init()
 end
 
 function update_scene()
-  -- Update controller state
-  controller:update()
-  
-  -- Get camera movement from controller
-  local dx, dz = controller:update_camera(camera, camera_rotation)
-  if dx and dz then
-    params:set("cam_x", params:get("cam_x") + dx)
-    params:set("cam_z", params:get("cam_z") + dz)
+  -- Safely update controller state
+  if controller then
+    controller:update()
+    
+    -- Get camera movement from controller
+    local success, dx, dz = pcall(function()
+      return controller:update_camera(camera, camera_rotation)
+    end)
+    
+    if success and dx and dz then
+      params:set("cam_x", params:get("cam_x") + dx)
+      params:set("cam_z", params:get("cam_z") + dz)
+    end
   end
   
   -- Update camera position

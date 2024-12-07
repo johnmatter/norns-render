@@ -1,3 +1,5 @@
+local gamepad = require('gamepad')
+
 ControllerBase = {}
 ControllerBase.__index = ControllerBase
 
@@ -55,6 +57,20 @@ function ControllerBase:update_camera(camera, camera_rotation)
   local dz = (right_z * self.axes.left_x - forward_z * self.axes.left_y) * self.move_speed
   
   return dx, dz
+end
+
+function ControllerBase:read_axis(axis_name)
+  if not self.id then return 0 end
+  
+  local success, value = pcall(function()
+    return gamepad.axis(self.id, axis_name)
+  end)
+  
+  if success then
+    return self:apply_deadzone(value)
+  else
+    return 0
+  end
 end
 
 return ControllerBase 

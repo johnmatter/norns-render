@@ -1,3 +1,4 @@
+local gamepad = require('gamepad')
 local ControllerBase = include('lib/controllers/ControllerBase')
 
 ProController = {}
@@ -13,11 +14,11 @@ end
 function ProController:update()
   if not self.connected then return end
   
-  -- Map Pro Controller specific axes
-  self.axes.left_x = self:apply_deadzone(gamepad.axis(self.id, 'leftx'))
-  self.axes.left_y = self:apply_deadzone(gamepad.axis(self.id, 'lefty'))
-  self.axes.right_x = self:apply_deadzone(gamepad.axis(self.id, 'rightx'))
-  self.axes.right_y = self:apply_deadzone(gamepad.axis(self.id, 'righty'))
+  -- Map Pro Controller specific axes with error handling
+  self.axes.left_x = self:read_axis('leftx')
+  self.axes.left_y = self:read_axis('lefty')
+  self.axes.right_x = self:read_axis('rightx')
+  self.axes.right_y = self:read_axis('righty')
 end
 
 return ProController 
