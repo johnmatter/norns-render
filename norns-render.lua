@@ -31,7 +31,7 @@ function init()
   params:add_group("3D Scene", 7)
   params:add_control("cam_x", "Camera X", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
   params:add_control("cam_y", "Camera Y", controlspec.new(-20, 20, 'lin', 0.1, 0, "", 0.1))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-30, -1, 'lin', 0.1, -10, "", 0.1))
+  params:add_control("cam_z", "Camera Z", controlspec.new(-20, 20, 'lin', 0.1, -10, "", 0.1))
   
   -- Parameters for cube rotation
   params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
@@ -69,10 +69,10 @@ function init()
 )
   
   -- Add cube to main scene
-  -- main_scene:add(cube)
+  main_scene:add(cube)
   
   -- Set different render styles for different scenes
-  -- main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
+  main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
   update_scene()
@@ -84,13 +84,13 @@ function update_scene()
   camera.y = params:get("cam_y")
   camera.z = params:get("cam_z")
   
-  -- -- Update cube rotation
-  -- cube:rotate(params:get("rot_x"), {x = 1, y = 0, z = 0})
-  -- cube:rotate(params:get("rot_y"), {x = 0, y = 1, z = 0})
-  -- cube:rotate(params:get("rot_z"), {x = 0, y = 0, z = 1})
+  -- Update cube rotation
+  cube:rotate(params:get("rot_x"), {x = 1, y = 0, z = 0})
+  cube:rotate(params:get("rot_y"), {x = 0, y = 1, z = 0})
+  cube:rotate(params:get("rot_z"), {x = 0, y = 0, z = 1})
   
-  -- -- Update cube scale
-  -- cube:set_scale(params:get("scale"))
+  -- Update cube scale
+  cube:set_scale(params:get("scale"))
   
   -- Update parameter display
   if param_names[selected_param] == "pos" then
@@ -118,9 +118,8 @@ function key(n, z)
 end
 
 function enc(n, d)
-  if n == 3 then
-  elseif n == 1 then
-    -- Adjust first value of selected parameter
+  -- Adjust first value of selected parameter
+  if n == 1 then
     if param_names[selected_param] == "pos" then
       params:delta("cam_x", d)
     elseif param_names[selected_param] == "scale" then
@@ -128,15 +127,17 @@ function enc(n, d)
     elseif param_names[selected_param] == "rotxyz" then
       params:delta("rot_x", d)
     end
-  elseif n == 3 then
-    -- Adjust second value of selected parameter
+
+  -- Adjust second value of selected parameter
+  elseif n == 2 then
     if param_names[selected_param] == "pos" then
       params:delta("cam_y", d)
     elseif param_names[selected_param] == "rotxyz" then
       params:delta("rot_y", d)
     end
-  elseif n == 2 then
-    -- Adjust third value of selected parameter
+
+  -- Adjust third value of selected parameter
+  elseif n == 3 then
     if param_names[selected_param] == "pos" then
       params:delta("cam_z", d)
     elseif param_names[selected_param] == "rotxyz" then
@@ -149,15 +150,14 @@ end
 function redraw()
   local current_time = util.time()
 
-  
   screen.clear()
   
-  -- -- Update main scene at 30 fps
-  -- if current_time - last_main_update >= (1 / main_scene_fps) then
-  --   renderer:render_scene(main_scene)
+  -- Update main scene at 30 fps
+  if current_time - last_main_update >= (1 / main_scene_fps) then
+    renderer:render_scene(main_scene)
   --   renderer:render_scene(overlay_scene)
-  --   last_main_update = current_time
-  -- end
+    last_main_update = current_time
+  end
   update_scene()
   
   -- Always draw parameter text

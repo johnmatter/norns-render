@@ -112,14 +112,8 @@ end
 
 function Renderer:render_shape(shape)
   for _, face in ipairs(shape.faces) do
-    for _, vertex in ipairs(face) do
-      print(vertex)
-    end
     self:draw_face(shape.vertices, face)
   end
-end
-
-function Renderer:render()
 end
 
 function Renderer:draw_line(p1, p2, brightness)
