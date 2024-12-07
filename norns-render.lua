@@ -74,7 +74,6 @@ function init()
   -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
     local success, err = pcall(function()
-      gamepad.init()
       gamepad.add_callback(function(id, action, value)
         if active_controller.connect and params:get("control_scheme") == 2 then
           if action == 'add' then
