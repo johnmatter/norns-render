@@ -48,7 +48,7 @@ local rotation_lfos = {
     math.pi/4,        -- max
     1,                -- depth
     'free',           -- mode
-    0.1,              -- period (in seconds)
+    10,               -- period (in seconds)
     function(scaled, raw)  -- action callback
       if cube then
         cube:rotate(scaled, {x = 1, y = 0, z = 0})
@@ -61,7 +61,7 @@ local rotation_lfos = {
     math.pi/4,
     1,
     'free',
-    0.15,
+    8,
     function(scaled, raw)
       if cube then
         cube:rotate(scaled, {x = 0, y = 1, z = 0})
@@ -74,7 +74,7 @@ local rotation_lfos = {
     math.pi/4,
     1,
     'free',
-    0.2,
+    20,
     function(scaled, raw)
       if cube then
         cube:rotate(scaled, {x = 0, y = 0, z = 1})
@@ -87,9 +87,9 @@ local redraw_clock
 function init()
   -- Parameters for camera position
   params:add_group("3D Scene", 7)
-  params:add_control("cam_x", "Camera X", controlspec.new(-20, 20, 'lin', 0.01, 0, "", 0.01))
-  params:add_control("cam_y", "Camera Y", controlspec.new(-20, 20, 'lin', 0.01, 0, "", 0.01))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-20, 20, 'lin', 0.01, -10, "", 0.01))
+  params:add_control("cam_x", "Camera X", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
+  params:add_control("cam_y", "Camera Y", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
+  params:add_control("cam_z", "Camera Z", controlspec.new(-100, 100, 'lin', 0.01, -10, "", 0.01))
   
   -- Parameters for cube rotation
   params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
@@ -141,14 +141,14 @@ function init()
   -- Create cube and scenes as before
   cube = Shape:new(
     {
-      { x = -5, y = -5, z = -5 },
-      { x =  5, y = -5, z = -5 },
-      { x =  5, y =  5, z = -5 },
-      { x = -5, y =  5, z = -5 },
-      { x = -5, y = -5, z =  5 },
-      { x =  5, y = -5, z =  5 },
-      { x =  5, y =  5, z =  5 },
-      { x = -5, y =  5, z =  5 },
+      { x = -3, y = -3, z = -3 },
+      { x =  3, y = -3, z = -3 },
+      { x =  3, y =  3, z = -3 },
+      { x = -3, y =  3, z = -3 },
+      { x = -3, y = -3, z =  3 },
+      { x =  3, y = -3, z =  3 },
+      { x =  3, y =  3, z =  3 },
+      { x = -3, y =  3, z =  3 },
     },
     {
       { 1, 2, 3, 4 }, -- Back face
