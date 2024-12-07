@@ -47,8 +47,12 @@ local rotation_lfos = {
     math.pi/4,        -- max
     1,                -- depth
     'free',           -- mode
-    100,              -- period (in seconds)
-    nil               -- no action needed, we'll read values directly
+    0.1,              -- period (in seconds)
+    function(scaled, raw)  -- action callback
+      if cube then
+        cube:rotate(scaled, {x = 1, y = 0, z = 0})
+      end
+    end
   ),
   y = lfo.new(
     'sine',
@@ -56,8 +60,12 @@ local rotation_lfos = {
     math.pi/4,
     1,
     'free',
-    150,
-    nil
+    0.15,
+    function(scaled, raw)
+      if cube then
+        cube:rotate(scaled, {x = 0, y = 1, z = 0})
+      end
+    end
   ),
   z = lfo.new(
     'sine',
@@ -65,8 +73,12 @@ local rotation_lfos = {
     math.pi/4,
     1,
     'free',
-    200,
-    nil
+    0.2,
+    function(scaled, raw)
+      if cube then
+        cube:rotate(scaled, {x = 0, y = 0, z = 1})
+      end
+    end
   )
 }
 local redraw_clock
@@ -174,11 +186,8 @@ function init()
   
   -- Configure LFOs
   for axis, lfo_obj in pairs(rotation_lfos) do
-    lfo_obj.min = -params:get("lfo_"..axis.."_depth")
-    lfo_obj.max = params:get("lfo_"..axis.."_depth")
-    lfo_obj.shape = params:get("lfo_"..axis.."_shape")
-    lfo_obj.period = 1/params:get("lfo_"..axis.."_freq")
-    lfo_obj:start()
+    lfo_obj:add_params("rot_" .. axis)  -- Add params with unique ID
+    lfo_obj:start()  -- Start the LFO
   end
   
   -- Modify LFO parameter actions
@@ -228,12 +237,6 @@ function update_scene()
   camera.x = params:get("cam_x")
   camera.y = params:get("cam_y")
   camera.z = params:get("cam_z")
-  
-  -- Update cube rotation using LFOs
-  cube:rotate(rotation_lfos.x(), {x = 1, y = 0, z = 0})
-  cube:rotate(rotation_lfos.y(), {x = 0, y = 1, z = 0})
-  cube:rotate(rotation_lfos.z(), {x = 0, y = 0, z = 1})
-  
   -- Update cube scale
   cube:set_scale(params:get("scale"))
   
