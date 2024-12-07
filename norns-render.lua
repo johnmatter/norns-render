@@ -146,7 +146,7 @@ function redraw()
   -- Always draw parameter text
   screen.move(1, 7)
   screen.level(15)
-  screen.text_left(param_display)
+  screen.text(param_display)
   
   screen.update()
 end

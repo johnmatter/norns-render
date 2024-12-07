@@ -120,7 +120,6 @@ function Renderer:render_shape(shape)
 end
 
 function Renderer:render()
-  screen.update()
 end
 
 function Renderer:draw_line(p1, p2, brightness)
