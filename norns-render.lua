@@ -106,10 +106,17 @@ function update_scene()
   end
 end
 
+function key(n, z)
+  -- K2/K3 cycle through parameters
+  if z == 1 and n == 2 then
+    selected_param = util.wrap(selected_param + 1, 1, #param_names)
+  elseif z == 1 and n == 3 then
+    selected_param = util.wrap(selected_param - 1, 1, #param_names)
+  end
+end
+
 function enc(n, d)
   if n == 3 then
-    -- Cycle through parameters
-    selected_param = util.wrap(selected_param + d, 1, #param_names)
   elseif n == 1 then
     -- Adjust first value of selected parameter
     if param_names[selected_param] == "pos" then
@@ -125,6 +132,13 @@ function enc(n, d)
       params:delta("cam_y", d)
     elseif param_names[selected_param] == "rotxyz" then
       params:delta("rot_y", d)
+    end
+  elseif n == 3 then
+    -- Adjust third value of selected parameter
+    if param_names[selected_param] == "pos" then
+      params:delta("cam_z", d)
+    elseif param_names[selected_param] == "rotxyz" then
+      params:delta("rot_z", d)
     end
   end
   update_scene()
