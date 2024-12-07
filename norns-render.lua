@@ -110,8 +110,10 @@ function key(n, z)
   -- K2/K3 cycle through parameters
   if z == 1 and n == 2 then
     selected_param = util.wrap(selected_param + 1, 1, #param_names)
+    update_scene()
   elseif z == 1 and n == 3 then
     selected_param = util.wrap(selected_param - 1, 1, #param_names)
+    update_scene()
   end
 end
 
@@ -126,14 +128,14 @@ function enc(n, d)
     elseif param_names[selected_param] == "rotxyz" then
       params:delta("rot_x", d)
     end
-  elseif n == 2 then
+  elseif n == 3 then
     -- Adjust second value of selected parameter
     if param_names[selected_param] == "pos" then
       params:delta("cam_y", d)
     elseif param_names[selected_param] == "rotxyz" then
       params:delta("rot_y", d)
     end
-  elseif n == 3 then
+  elseif n == 2 then
     -- Adjust third value of selected parameter
     if param_names[selected_param] == "pos" then
       params:delta("cam_z", d)
@@ -141,12 +143,12 @@ function enc(n, d)
       params:delta("rot_z", d)
     end
   end
-  update_scene()
   redraw()
 end
 
 function redraw()
   local current_time = util.time()
+
   
   screen.clear()
   
@@ -156,6 +158,7 @@ function redraw()
   --   renderer:render_scene(overlay_scene)
   --   last_main_update = current_time
   -- end
+  update_scene()
   
   -- Always draw parameter text
   screen.move(1, 7)
