@@ -7,6 +7,7 @@ local Scene = include("lib/Scene")
 local Projection = include("lib/Projection")
 local ProController = include('lib/controllers/ProController')
 local NornsController = include('lib/controllers/NornsController')
+local KeyboardController = include('lib/controllers/KeyboardController')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -59,9 +60,11 @@ function init()
   end
   
   -- Add to parameters group first
-  params:add_option("control_scheme", "Control Scheme", {"Norns", "Gamepad"}, 1)
+  params:add_option("control_scheme", "Control Scheme", {"Norns", "Keyboard", "Gamepad"}, 1)
   params:set_action("control_scheme", function(value)
     if value == 2 then
+      active_controller = KeyboardController:new()
+    elseif value == 3 then
       active_controller = ProController:new()
     else
       active_controller = NornsController:new()
