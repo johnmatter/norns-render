@@ -73,23 +73,20 @@ function init()
   
   -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
-    local success, err = pcall(function()
-      gamepad.add_callback(function(id, action, value)
-        if active_controller.connect and params:get("control_scheme") == 2 then
-          if action == 'add' then
-            print("gamepad " .. id .. " added")
-            active_controller:connect(id)
-          elseif action == 'remove' then
-            print("gamepad " .. id .. " removed")
-            active_controller:disconnect()
-          end
-        end
-      end)
-    end)
+    -- Register connect callback
+    gamepad.connect = function(id)
+      print("gamepad " .. id .. " connected")
+      if active_controller.connect and params:get("control_scheme") == 2 then
+        active_controller:connect(id)
+      end
+    end
     
-    if not success then
-      print("Gamepad initialization failed: " .. tostring(err))
-      params:set("control_scheme", 1)
+    -- Register disconnect callback
+    gamepad.disconnect = function(id)
+      print("gamepad " .. id .. " disconnected")
+      if active_controller.disconnect and params:get("control_scheme") == 2 then
+        active_controller:disconnect()
+      end
     end
   end
   
