@@ -35,7 +35,6 @@ local cube
 local selected_param = 1
 local param_names = {"pos", "scale", "rotxyz"}
 local param_display = ""
-local controller = ProController:new()
 local camera_rotation = { x = 0, y = 0 }
 local active_controller
 
@@ -59,39 +58,10 @@ function init()
     update_scene()
   end
   
-  -- Create cube and scenes as before
-  cube = Shape:new(
-  {
-    { x = -5, y = -5, z = -5 },
-    { x =  5, y = -5, z = -5 },
-    { x =  5, y =  5, z = -5 },
-    { x = -5, y =  5, z = -5 },
-    { x = -5, y = -5, z =  5 },
-    { x =  5, y = -5, z =  5 },
-    { x =  5, y =  5, z =  5 },
-    { x = -5, y =  5, z =  5 },
-  },
-  {
-    { 1, 2, 3, 4 }, -- Back face
-    { 5, 6, 7, 8 }, -- Front face
-    { 1, 2, 6, 5 }, -- Left face
-    { 4, 3, 7, 8 }, -- Right face
-    { 1, 4, 8, 5 }, -- Top face
-    { 2, 3, 7, 6 }, -- Bottom face
-  }
-)
-  
-  -- Add cube to main scene
-  main_scene:add(cube)
-  
-  -- Set different render styles for different scenes
-  main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
-  -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
-  
   -- Add to parameters group first
-  params:add_option("control_scheme", "Control Scheme", {"Gamepad", "Norns"}, 2)
+  params:add_option("control_scheme", "Control Scheme", {"Norns", "Gamepad"}, 1)
   params:set_action("control_scheme", function(value)
-    if value == 1 then
+    if value == 2 then
       active_controller = ProController:new()
     else
       active_controller = NornsController:new()
@@ -101,19 +71,17 @@ function init()
   -- Initialize with Norns controller by default
   active_controller = NornsController:new()
   
-  -- Setup gamepad callback in a protected call
+  -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
     local success, err = pcall(function()
-      gamepad.init()  -- Try initializing gamepad module first
+      gamepad.init()
       gamepad.add_callback(function(id, action, value)
-        if action == 'add' then
-          print("gamepad " .. id .. " added")
-          if active_controller.connect then
+        if active_controller.connect and params:get("control_scheme") == 2 then
+          if action == 'add' then
+            print("gamepad " .. id .. " added")
             active_controller:connect(id)
-          end
-        elseif action == 'remove' then
-          print("gamepad " .. id .. " removed")
-          if active_controller.disconnect then
+          elseif action == 'remove' then
+            print("gamepad " .. id .. " removed")
             active_controller:disconnect()
           end
         end
@@ -122,22 +90,51 @@ function init()
     
     if not success then
       print("Gamepad initialization failed: " .. tostring(err))
-      -- Ensure we're using Norns controls if gamepad fails
-      params:set("control_scheme", 2)
+      params:set("control_scheme", 1)
     end
   end
+  
+  -- Create cube and scenes as before
+  cube = Shape:new(
+    {
+      { x = -5, y = -5, z = -5 },
+      { x =  5, y = -5, z = -5 },
+      { x =  5, y =  5, z = -5 },
+      { x = -5, y =  5, z = -5 },
+      { x = -5, y = -5, z =  5 },
+      { x =  5, y = -5, z =  5 },
+      { x =  5, y =  5, z =  5 },
+      { x = -5, y =  5, z =  5 },
+    },
+    {
+      { 1, 2, 3, 4 }, -- Back face
+      { 5, 6, 7, 8 }, -- Front face
+      { 1, 2, 6, 5 }, -- Left face
+      { 4, 3, 7, 8 }, -- Right face
+      { 1, 4, 8, 5 }, -- Top face
+      { 2, 3, 7, 6 }, -- Bottom face
+    }
+  )
+  
+  -- Add cube to main scene
+  main_scene:add(cube)
+  
+  -- Set different render styles for different scenes
+  main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
+  -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
   update_scene()
 end
 
 function update_scene()
-  -- Safely update controller state
-  if controller then
-    controller:update()
+  -- Update controller state and get movement
+  if active_controller then
+    if active_controller.update then
+      active_controller:update()
+    end
     
-    -- Get camera movement from controller
     local success, dx, dz = pcall(function()
-      return controller:update_camera(camera, camera_rotation)
+      return active_controller:update_camera(camera, camera_rotation)
     end)
     
     if success and dx and dz then
