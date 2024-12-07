@@ -8,6 +8,8 @@ local Projection = include("lib/Projection")
 local ProController = include('lib/controllers/ProController')
 local NornsController = include('lib/controllers/NornsController')
 local KeyboardController = include('lib/controllers/KeyboardController')
+local lfo = require('lfo')
+local clock = require('clock')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -38,6 +40,12 @@ local param_names = {"pos", "scale", "rotxyz"}
 local param_display = ""
 local camera_rotation = { x = 0, y = 0 }
 local active_controller
+local rotation_lfos = {
+  x = lfo:new(),
+  y = lfo:new(),
+  z = lfo:new()
+}
+local redraw_clock
 
 function init()
   -- Parameters for camera position
@@ -122,7 +130,56 @@ function init()
   main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
   
+  -- Setup LFOs for cube rotation
+  params:add_group("Rotation LFOs", 9)
+  
+  -- X rotation LFO
+  params:add_option("lfo_x_shape", "X LFO Shape", lfo.options.shape, 1)
+  params:add_control("lfo_x_freq", "X LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.01, 'hz'))
+  params:add_control("lfo_x_depth", "X LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
+  
+  -- Y rotation LFO
+  params:add_option("lfo_y_shape", "Y LFO Shape", lfo.options.shape, 1)
+  params:add_control("lfo_y_freq", "Y LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.015, 'hz'))
+  params:add_control("lfo_y_depth", "Y LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
+  
+  -- Z rotation LFO
+  params:add_option("lfo_z_shape", "Z LFO Shape", lfo.options.shape, 1)
+  params:add_control("lfo_z_freq", "Z LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.02, 'hz'))
+  params:add_control("lfo_z_depth", "Z LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
+  
+  -- Configure LFOs
+  for axis, lfo_obj in pairs(rotation_lfos) do
+    lfo_obj:set('shape', params:get("lfo_"..axis.."_shape"))
+    lfo_obj:set('freq', params:get("lfo_"..axis.."_freq"))
+    lfo_obj:set('depth', params:get("lfo_"..axis.."_depth"))
+    lfo_obj:start()
+  end
+  
+  -- Add LFO parameter actions
+  for axis in pairs(rotation_lfos) do
+    params:set_action("lfo_"..axis.."_shape", function(value)
+      rotation_lfos[axis]:set('shape', value)
+    end)
+    params:set_action("lfo_"..axis.."_freq", function(value)
+      rotation_lfos[axis]:set('freq', value)
+    end)
+    params:set_action("lfo_"..axis.."_depth", function(value)
+      rotation_lfos[axis]:set('depth', value)
+    end)
+  end
+  
   update_scene()
+  
+  -- Start the redraw clock at the end of init
+  redraw_clock = clock.run(
+    function()
+      while true do
+        clock.sleep(1/fps)  -- fps is 30
+        redraw()
+      end
+    end
+  )
 end
 
 function update_scene()
@@ -147,10 +204,10 @@ function update_scene()
   camera.y = params:get("cam_y")
   camera.z = params:get("cam_z")
   
-  -- Update cube rotation
-  cube:rotate(params:get("rot_x"), {x = 1, y = 0, z = 0})
-  cube:rotate(params:get("rot_y"), {x = 0, y = 1, z = 0})
-  cube:rotate(params:get("rot_z"), {x = 0, y = 0, z = 1})
+  -- Update cube rotation using LFOs
+  cube:rotate(rotation_lfos.x(), {x = 1, y = 0, z = 0})
+  cube:rotate(rotation_lfos.y(), {x = 0, y = 1, z = 0})
+  cube:rotate(rotation_lfos.z(), {x = 0, y = 0, z = 1})
   
   -- Update cube scale
   cube:set_scale(params:get("scale"))
@@ -184,19 +241,17 @@ function enc(n, d)
 end
 
 function redraw()
-  local current_time = util.time()
-
   screen.clear()
   
-  -- Update main scene at 30 fps
+  -- Update main scene at main_scene_fps
+  local current_time = util.time()
   if current_time - last_main_update >= (1 / main_scene_fps) then
     renderer:render_scene(main_scene)
-  --   renderer:render_scene(overlay_scene)
     last_main_update = current_time
   end
   update_scene()
   
-  -- Always draw parameter text
+  -- Draw parameter text
   screen.move(1, 7)
   screen.level(15)
   screen.text(param_display)
@@ -205,4 +260,5 @@ function redraw()
 end
 
 function cleanup()
+  clock.cancel(redraw_clock)
 end
