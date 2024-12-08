@@ -210,7 +210,7 @@ function init()
     while true do
       clock.sleep(1/fps)  -- fps is defined on line 29
       local menu_status = norns.menu.status()
-      if not menu_status then
+      if not menu_status and camera:needs_redraw() then
         redraw()
       end
     end
@@ -226,26 +226,11 @@ end
 
 function update_scene()
   if active_controller then
-    if active_controller.update then
-      debug.log("Calling controller update")
-      active_controller:update()
-    end
-    
     local success, dx, dy, dz = pcall(function()
-      debug.log("Calling update_camera")
       return active_controller:update_camera(camera)
     end)
     
     debug.log("Camera update success:", success, "deltas:", dx, dy, dz)
-    
-    if success then
-      if dx then 
-        local old_x, old_y, old_z = camera:get_position()
-        camera:set_position(camera.position.x + dx, camera.position.y + dy, camera.position.z + dz)
-        local new_x, new_y, new_z = camera:get_position()
-        debug.log("Camera moved from", old_x, old_y, old_z, "to", new_x, new_y, new_z)
-      end
-    end
   end
 end
 
