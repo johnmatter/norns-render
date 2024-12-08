@@ -105,24 +105,22 @@ function Renderer:draw_face(vertices, face)
     return
   end
 
-  -- Validate face indices
-  for _, index in ipairs(face) do
-    if not vertices[index] then
-      debug.log("Error: Invalid vertex index in face:", index)
-      return
-    end
-  end
-
   -- Project vertices
   local projected = {}
   for _, index in ipairs(face) do
-    table.insert(projected, self:project_vertex(vertices[index]))
+    local vertex = vertices[index]
+    local proj = self:project_vertex(vertex)
+    debug.log("Projected vertex", index, "from", vertex.x, vertex.y, vertex.z, "to", proj.x, proj.y)
+    table.insert(projected, proj)
   end
 
   -- Draw the face
   if #projected >= 3 then
-    -- Draw face implementation...
-    -- (keep existing drawing code)
+    for i = 1, #projected do
+      local p1 = projected[i]
+      local p2 = projected[i % #projected + 1]
+      self:draw_line(p1, p2, 15)  -- Use full brightness for testing
+    end
   end
 end
 
@@ -140,23 +138,26 @@ function Renderer:draw_line(p1, p2, brightness)
 end
 
 function Renderer:render_scene(scene)
+  debug.log("Rendering scene with", #scene.objects, "objects")
+  
   if scene.render_style then
     -- Save current style
     local previous_style = self.render_style
-    -- Use scene-specific style
     self.render_style = scene.render_style
     
     -- Render all objects
-    for _, shape in ipairs(scene.objects) do
-      self:render_shape(shape)
+    for _, obj in ipairs(scene.objects) do
+      debug.log("Rendering object with", #obj.vertices, "vertices and", #obj.faces, "faces")
+      self:render_shape(obj)
     end
     
     -- Restore previous style
     self.render_style = previous_style
   else
-    -- No style switching needed
-    for _, shape in ipairs(scene.objects) do
-      self:render_shape(shape)
+    -- Render all objects with current style
+    for _, obj in ipairs(scene.objects) do
+      debug.log("Rendering object with", #obj.vertices, "vertices and", #obj.faces, "faces")
+      self:render_shape(obj)
     end
   end
 end

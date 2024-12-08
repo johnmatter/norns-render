@@ -7,8 +7,12 @@ function debug.log(...)
     str = str .. tostring(v) .. " "
   end
   
+  -- Generate timestamp for filename
+  local timestamp = os.date("%Y%m%d%H%M")
+  local filename = string.format("norns-render-debug-%s.txt", timestamp)
+  
   -- write to debug file
-  local file = io.open(_path.data.."norns-render-debug.txt", "a")
+  local file = io.open(_path.data..filename, "a")
   if file then
     file:write(os.date("%Y-%m-%d %H:%M:%S") .. ": " .. str .. "\n")
     file:close()
