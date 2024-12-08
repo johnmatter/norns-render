@@ -37,31 +37,19 @@ end
 
 function Camera:handle_orbital_action(action, value)
   if action == InputAction.ORBIT_HORIZONTAL then
-    self.azimuth = self.azimuth + (value * self.rotate_speed)
+    self.azimuth = self.azimuth + value
     self:update_from_orbital()
     return true
   elseif action == InputAction.ORBIT_VERTICAL then
-    self.elevation = util.clamp(
-      self.elevation + (value * self.rotate_speed),
-      -math.pi/2 + 0.1,
-      math.pi/2 - 0.1
-    )
+    self.elevation = self.elevation + value
     self:update_from_orbital()
     return true
   elseif action == InputAction.ORBIT_ZOOM_IN then
-    self.orbital_radius = util.clamp(
-      self.orbital_radius - self.move_speed,
-      self.min_radius,
-      self.max_radius
-    )
+    self.orbital_radius = math.max(self.min_radius, self.orbital_radius - self.move_speed)
     self:update_from_orbital()
     return true
   elseif action == InputAction.ORBIT_ZOOM_OUT then
-    self.orbital_radius = util.clamp(
-      self.orbital_radius + self.move_speed,
-      self.min_radius,
-      self.max_radius
-    )
+    self.orbital_radius = math.min(self.max_radius, self.orbital_radius + self.move_speed)
     self:update_from_orbital()
     return true
   end

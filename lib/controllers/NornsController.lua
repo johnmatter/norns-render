@@ -43,11 +43,17 @@ function NornsController:setup_free_mode_mappings()
 end
 
 function NornsController:key(n, z)
-  return self.input_mapper:handle_digital("key" .. n, z)
+  local binding = self.input_mapper:handle_digital("key" .. n, z)
+  if binding then
+    self:handle_input_binding(binding)
+  end
 end
 
 function NornsController:enc(n, d)
-  return self.input_mapper:handle_analog("enc" .. n, d)
+  local binding = self.input_mapper:handle_analog("enc" .. n, d)
+  if binding then
+    self:handle_input_binding(binding)
+  end
 end
 
 function NornsController:handle_input_binding(binding)
