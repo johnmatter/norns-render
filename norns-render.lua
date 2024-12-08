@@ -208,9 +208,9 @@ function init()
   -- Initialize redraw clock
   redraw_clock = clock.run(function()
     while true do
-      clock.sleep(1/fps)  -- fps is defined on line 29
+      clock.sleep(1/fps)
       local menu_status = norns.menu.status()
-      if not menu_status and camera:needs_redraw() then
+      if not menu_status then
         redraw()
       end
     end
@@ -260,7 +260,7 @@ function redraw()
   
   -- Render the scenes
   renderer:render_scene(main_scene)
-  renderer:render_scene(overlay_scene)
+  -- renderer:render_scene(overlay_scene)
   
   -- Update camera render state after successful render
   camera:update_render_state()
