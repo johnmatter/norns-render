@@ -83,6 +83,7 @@ local rotation_lfos = {
   )
 }
 local redraw_clock
+local input_clock
 
 function init()
   -- Parameters for camera position
@@ -206,6 +207,16 @@ function init()
   
   update_scene()
   
+  -- Initialize input polling clock
+  input_clock = metro.init(function()
+    if active_controller and active_controller.poll then
+      active_controller:poll()
+      update_scene()
+    end
+  end, 1/30, -1)  -- 30Hz polling rate
+  
+  input_clock:start()
+  
   -- Start the redraw clock at the end of init
   redraw_clock = metro.init(function()
     local menu_status = norns.menu.status()
@@ -279,7 +290,7 @@ function redraw()
   
   -- Draw parameter text
   screen.move(1, 7)
-  screen.level(15)
+  screen.level(5)
   screen.text(param_display)
   
   screen.update()
@@ -287,4 +298,5 @@ end
 
 function cleanup()
   metro.cancel(redraw_clock)
+  metro.cancel(input_clock)
 end
