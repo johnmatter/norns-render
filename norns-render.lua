@@ -279,7 +279,11 @@ function enc(n, d)
 end
 
 function redraw()
+  debug.log("Starting redraw")
   screen.clear()
+  
+  -- Verify main_scene has objects
+  debug.log("Main scene objects:", #main_scene.objects)
   
   -- Render the scenes
   renderer:render_scene(main_scene)
@@ -291,6 +295,7 @@ function redraw()
   screen.text(param_display)
   
   screen.update()
+  debug.log("Completed redraw")
 end
 
 function cleanup()

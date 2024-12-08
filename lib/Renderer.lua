@@ -125,9 +125,12 @@ function Renderer:draw_face(vertices, face)
 end
 
 function Renderer:render_shape(shape)
-  for _, face in ipairs(shape.faces) do
+  debug.log("Starting shape render")
+  for i, face in ipairs(shape.faces) do
+    debug.log("Rendering face", i, "with", #face, "vertices")
     self:draw_face(shape.vertices, face)
   end
+  debug.log("Completed shape render")
 end
 
 function Renderer:draw_line(p1, p2, brightness)
@@ -140,14 +143,19 @@ end
 function Renderer:render_scene(scene)
   debug.log("Rendering scene with", #scene.objects, "objects")
   
+  if not scene or not scene.objects then
+    debug.log("Error: Invalid scene or missing objects")
+    return
+  end
+  
   if scene.render_style then
     -- Save current style
     local previous_style = self.render_style
     self.render_style = scene.render_style
     
     -- Render all objects
-    for _, obj in ipairs(scene.objects) do
-      debug.log("Rendering object with", #obj.vertices, "vertices and", #obj.faces, "faces")
+    for i, obj in ipairs(scene.objects) do
+      debug.log("Rendering object", i, "with", #obj.vertices, "vertices and", #obj.faces, "faces")
       self:render_shape(obj)
     end
     
@@ -155,8 +163,8 @@ function Renderer:render_scene(scene)
     self.render_style = previous_style
   else
     -- Render all objects with current style
-    for _, obj in ipairs(scene.objects) do
-      debug.log("Rendering object with", #obj.vertices, "vertices and", #obj.faces, "faces")
+    for i, obj in ipairs(scene.objects) do
+      debug.log("Rendering object", i, "with", #obj.vertices, "vertices and", #obj.faces, "faces")
       self:render_shape(obj)
     end
   end
