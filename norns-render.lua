@@ -96,23 +96,23 @@ function init()
   params:add_option("control_scheme", "Control Scheme", {"Norns", "Keyboard", "Gamepad"}, 1)
   params:set_action("control_scheme", function(value)
     if value == 2 then
-      active_controller = KeyboardController:new()
+      set_active_controller(KeyboardController:new())
     elseif value == 3 then
-      active_controller = ProController:new()
+      set_active_controller(ProController:new())
     else
-      active_controller = NornsController:new()
+      set_active_controller(NornsController:new())
     end
   end)
   
   -- Initialize with Norns controller by default
-  active_controller = NornsController:new()
+  set_active_controller(NornsController:new())
   
   -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
     -- Register connect callback
     gamepad.connect = function(id)
       print("gamepad " .. id .. " connected")
-      if active_controller.connect and params:get("control_scheme") == 2 then
+      if active_controller.connect and params:get("control_scheme") == 3 then
         active_controller:connect(id)
       end
     end
@@ -120,7 +120,7 @@ function init()
     -- Register disconnect callback
     gamepad.disconnect = function(id)
       print("gamepad " .. id .. " disconnected")
-      if active_controller.disconnect and params:get("control_scheme") == 2 then
+      if active_controller.disconnect and params:get("control_scheme") == 3 then
         active_controller:disconnect()
       end
     end
@@ -227,16 +227,9 @@ end
 
 function update_scene()
   if active_controller then
-    local success, dx, dy, dz = pcall(function()
-      return active_controller:update_camera(camera)
-    end)
-    
-    if success then
-      if dx and dy and dz then
-        camera.position.x = camera.position.x + dx
-        camera.position.y = camera.position.y + dy
-        camera.position.z = camera.position.z + dz
-      end
+    -- Controller updates camera directly through input bindings
+    if active_controller.update then
+      active_controller:update()
     end
     debug.log("Camera position:", camera.position.x, camera.position.y, camera.position.z)
   end
@@ -284,4 +277,9 @@ function cleanup()
   for _, lfo_obj in pairs(rotation_lfos) do
     lfo_obj:stop()
   end
+end
+
+function set_active_controller(new_controller)
+  active_controller = new_controller
+  active_controller.camera = camera
 end

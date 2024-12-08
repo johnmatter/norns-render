@@ -7,52 +7,72 @@ setmetatable(KeyboardController, {__index = ControllerBase})
 
 function KeyboardController:new()
   local controller = ControllerBase:new()
-  controller.keys = {
-    w = false, a = false, s = false, d = false,  -- Movement
-    i = false, j = false, k = false, l = false,  -- Rotation
-    q = false, e = false                         -- Vertical movement
-  }
-  controller.orbital_mode = false  -- Keyboard uses free camera by default
+  controller.input_mapper = InputMapper:new()
+  controller.orbital_mode = true
+  controller.keys = {}
   setmetatable(controller, KeyboardController)
+  self:setup_orbital_mode_mappings()
   return controller
 end
 
-function KeyboardController:key_pressed(key)
-  if self.keys[key] ~= nil then
-    self.keys[key] = true
-    self:update_movement_and_rotation()
+function KeyboardController:setup_orbital_mode_mappings()
+  -- Mode toggle
+  self.input_mapper:map_digital("tab", 1, InputAction.TOGGLE_ORBITAL)
+  
+  -- Movement keys (digital inputs)
+  self.input_mapper:map_digital("w", 1, InputAction.ORBIT_ZOOM_IN)
+  self.input_mapper:map_digital("s", 1, InputAction.ORBIT_ZOOM_OUT)
+  
+  -- Rotation keys
+  self.input_mapper:map_digital("left", 1, InputAction.ORBIT_HORIZONTAL, -0.1)
+  self.input_mapper:map_digital("right", 1, InputAction.ORBIT_HORIZONTAL, 0.1)
+  self.input_mapper:map_digital("up", 1, InputAction.ORBIT_VERTICAL, -0.1)
+  self.input_mapper:map_digital("down", 1, InputAction.ORBIT_VERTICAL, 0.1)
+end
+
+function KeyboardController:setup_free_mode_mappings()
+  -- Mode toggle
+  self.input_mapper:map_digital("tab", 1, InputAction.TOGGLE_ORBITAL)
+  
+  -- Movement keys
+  self.input_mapper:map_digital("w", 1, InputAction.MOVE_FORWARD)
+  self.input_mapper:map_digital("s", 1, InputAction.MOVE_BACKWARD)
+  self.input_mapper:map_digital("a", 1, InputAction.MOVE_LEFT)
+  self.input_mapper:map_digital("d", 1, InputAction.MOVE_RIGHT)
+  
+  -- Look keys
+  self.input_mapper:map_digital("left", 1, InputAction.ROTATE_YAW, -0.1)
+  self.input_mapper:map_digital("right", 1, InputAction.ROTATE_YAW, 0.1)
+  self.input_mapper:map_digital("up", 1, InputAction.ROTATE_PITCH, -0.1)
+  self.input_mapper:map_digital("down", 1, InputAction.ROTATE_PITCH, 0.1)
+end
+
+function KeyboardController:update()
+  for key, state in pairs(self.keys) do
+    if state then
+      local binding = self.input_mapper:handle_digital(key, 1)
+      if binding then
+        self:handle_input_binding(binding)
+      end
+    end
   end
 end
 
-function KeyboardController:key_released(key)
-  if self.keys[key] ~= nil then
-    self.keys[key] = false
-    self:update_movement_and_rotation()
+function KeyboardController:handle_input_binding(binding)
+  if not self.camera then return false end
+  
+  if binding.action == InputAction.TOGGLE_ORBITAL then
+    self.orbital_mode = not self.orbital_mode
+    if self.orbital_mode then
+      self:setup_orbital_mode_mappings()
+    else
+      self:setup_free_mode_mappings()
+    end
+    self.camera.orbital_mode = self.orbital_mode
+    return true
   end
-end
-
-function KeyboardController:update_movement_and_rotation()
-  -- Convert key states to input bindings
-  local bindings = {}
   
-  -- Movement bindings
-  if self.keys.w then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, -1)) end
-  if self.keys.s then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, 1)) end
-  if self.keys.a then table.insert(bindings, InputBinding:new(InputAction.PAN_X, -1)) end
-  if self.keys.d then table.insert(bindings, InputBinding:new(InputAction.PAN_X, 1)) end
-  if self.keys.q then table.insert(bindings, InputBinding:new(InputAction.PAN_Y, -1)) end
-  if self.keys.e then table.insert(bindings, InputBinding:new(InputAction.PAN_Y, 1)) end
-  
-  -- Rotation bindings
-  if self.keys.i then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, -0.1)) end
-  if self.keys.k then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, 0.1)) end
-  if self.keys.j then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, -0.1)) end
-  if self.keys.l then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, 0.1)) end
-  
-  -- Apply all bindings
-  for _, binding in ipairs(bindings) do
-    self:handle_input_binding(binding)
-  end
+  return self.camera:handle_action(binding.action, binding.value)
 end
 
 return KeyboardController 

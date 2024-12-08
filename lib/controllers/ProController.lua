@@ -7,33 +7,72 @@ setmetatable(ProController, {__index = ControllerBase})
 
 function ProController:new()
   local controller = ControllerBase:new()
-  controller.orbital_mode = false  -- Gamepad uses free camera by default
+  controller.input_mapper = InputMapper:new()
+  controller.orbital_mode = true
   setmetatable(controller, ProController)
+  self:setup_orbital_mode_mappings()
   return controller
+end
+
+function ProController:setup_orbital_mode_mappings()
+  -- Mode toggle
+  self.input_mapper:map_digital("start", 1, InputAction.TOGGLE_ORBITAL)
+  
+  -- Left stick (analog inputs)
+  self.input_mapper:map_analog("leftx", InputAction.PAN_X, 1.0)
+  self.input_mapper:map_analog("lefty", InputAction.PAN_Z, 1.0)
+  
+  -- Right stick (analog inputs)
+  self.input_mapper:map_analog("rightx", InputAction.ORBIT_HORIZONTAL, 1.0)
+  self.input_mapper:map_analog("righty", InputAction.ORBIT_VERTICAL, 1.0)
+  
+  -- Triggers
+  self.input_mapper:map_analog("triggerleft", InputAction.ORBIT_ZOOM_OUT, 1.0)
+  self.input_mapper:map_analog("triggerright", InputAction.ORBIT_ZOOM_IN, 1.0)
+end
+
+function ProController:setup_free_mode_mappings()
+  -- Mode toggle
+  self.input_mapper:map_digital("start", 1, InputAction.TOGGLE_ORBITAL)
+  
+  -- Left stick (analog inputs)
+  self.input_mapper:map_analog("leftx", InputAction.MOVE_RIGHT, 1.0)
+  self.input_mapper:map_analog("lefty", InputAction.MOVE_FORWARD, -1.0)
+  
+  -- Right stick (analog inputs)
+  self.input_mapper:map_analog("rightx", InputAction.ROTATE_YAW, 1.0)
+  self.input_mapper:map_analog("righty", InputAction.ROTATE_PITCH, 1.0)
 end
 
 function ProController:update()
   if not self.connected then return end
   
-  -- Convert axis values to input bindings
-  local bindings = {}
-  
-  -- Left stick controls movement
-  local left_x = self:read_axis('leftx')
-  local left_y = self:read_axis('lefty')
-  if left_x ~= 0 then table.insert(bindings, InputBinding:new(InputAction.PAN_X, left_x)) end
-  if left_y ~= 0 then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, left_y)) end
-  
-  -- Right stick controls rotation
-  local right_x = self:read_axis('rightx')
-  local right_y = self:read_axis('righty')
-  if right_x ~= 0 then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, right_x)) end
-  if right_y ~= 0 then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, right_y)) end
-  
-  -- Apply all bindings
-  for _, binding in ipairs(bindings) do
-    self:handle_input_binding(binding)
+  -- Handle analog inputs
+  for axis, value in pairs(self:read_axes()) do
+    if math.abs(value) > 0.1 then -- Add deadzone
+      local binding = self.input_mapper:handle_analog(axis, value)
+      if binding then
+        self:handle_input_binding(binding)
+      end
+    end
   end
+end
+
+function ProController:handle_input_binding(binding)
+  if not self.camera then return false end
+  
+  if binding.action == InputAction.TOGGLE_ORBITAL then
+    self.orbital_mode = not self.orbital_mode
+    if self.orbital_mode then
+      self:setup_orbital_mode_mappings()
+    else
+      self:setup_free_mode_mappings()
+    end
+    self.camera.orbital_mode = self.orbital_mode
+    return true
+  end
+  
+  return self.camera:handle_action(binding.action, binding.value)
 end
 
 return ProController 

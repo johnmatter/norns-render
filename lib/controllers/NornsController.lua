@@ -10,29 +10,45 @@ setmetatable(NornsController, {__index = ControllerBase})
 function NornsController:new()
   local controller = ControllerBase:new()
   controller.input_mapper = InputMapper:new()
-  controller.input_mapper:map_norns_controls()
   controller.orbital_mode = true
-  controller.camera = nil  -- Will be set by update_camera
   setmetatable(controller, NornsController)
+  self:setup_orbital_mode_mappings()
   return controller
 end
 
+function NornsController:setup_orbital_mode_mappings()
+  -- Map Norns keys (digital inputs)
+  self.input_mapper:map_digital("key1", 1, InputAction.MODIFIER_K1, 1)
+  self.input_mapper:map_digital("key1", 0, InputAction.MODIFIER_K1, 0)
+  self.input_mapper:map_digital("key2", 1, InputAction.ORBIT_ZOOM_OUT)
+  self.input_mapper:map_digital("key3", 1, InputAction.ORBIT_ZOOM_IN)
+  
+  -- Add mode toggle when K1+K2+K3 are pressed
+  self.input_mapper:map_digital("key1+key2+key3", 1, InputAction.TOGGLE_ORBITAL)
+  
+  -- Map encoders (analog inputs)
+  self.input_mapper:map_analog("enc2", InputAction.ORBIT_HORIZONTAL, 0.1)
+  self.input_mapper:map_analog("enc3", InputAction.ORBIT_VERTICAL, 0.1)
+end
+
+function NornsController:setup_free_mode_mappings()
+  -- Map Norns keys (digital inputs)
+  self.input_mapper:map_digital("key1", 1, InputAction.MODIFIER_K1, 1)
+  self.input_mapper:map_digital("key1", 0, InputAction.MODIFIER_K1, 0)
+  self.input_mapper:map_digital("key2", 1, InputAction.MOVE_BACKWARD)
+  self.input_mapper:map_digital("key3", 1, InputAction.MOVE_FORWARD)
+  
+  -- Map encoders (analog inputs)
+  self.input_mapper:map_analog("enc2", InputAction.ROTATE_YAW, 0.1)
+  self.input_mapper:map_analog("enc3", InputAction.ROTATE_PITCH, 0.1)
+end
+
 function NornsController:key(n, z)
-  local binding = self.input_mapper:handle_key(n, z)
-  if binding then
-    self:handle_input_binding(binding)
-    return true
-  end
-  return false
+  return self.input_mapper:handle_digital("key" .. n, z)
 end
 
 function NornsController:enc(n, d)
-  local binding = self.input_mapper:handle_encoder(n, d)
-  if binding then
-    self:handle_input_binding(binding)
-    return true
-  end
-  return false
+  return self.input_mapper:handle_analog("enc" .. n, d)
 end
 
 function NornsController:handle_input_binding(binding)
@@ -41,39 +57,17 @@ function NornsController:handle_input_binding(binding)
   -- Handle mode toggles first
   if binding.action == InputAction.TOGGLE_ORBITAL then
     self.orbital_mode = not self.orbital_mode
+    if self.orbital_mode then
+      self:setup_orbital_mode_mappings()
+    else
+      self:setup_free_mode_mappings()
+    end
+    self.camera.orbital_mode = self.orbital_mode
     return true
   end
   
-  -- Forward camera actions to camera and return movement deltas
-  if self.camera:handle_action(binding.action, binding.value) then
-    -- Return actual position changes
-    return self.camera.position.x - self.last_x,
-           self.camera.position.y - self.last_y,
-           self.camera.position.z - self.last_z
-  end
-  return 0, 0, 0
-end
-
-function NornsController:update_camera(camera)
-  if not self.last_x then
-    self.last_x = camera.position.x
-    self.last_y = camera.position.y
-    self.last_z = camera.position.z
-    return 0, 0, 0
-  end
-  
-  -- Calculate actual movement since last update
-  local dx = camera.position.x - self.last_x
-  local dy = camera.position.y - self.last_y
-  local dz = camera.position.z - self.last_z
-  
-  -- Update last positions
-  self.last_x = camera.position.x
-  self.last_y = camera.position.y
-  self.last_z = camera.position.z
-  
-  self.camera = camera
-  return dx, dy, dz
+  -- Forward camera actions to camera
+  return self.camera:handle_action(binding.action, binding.value)
 end
 
 return NornsController

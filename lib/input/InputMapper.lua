@@ -6,70 +6,31 @@ InputMapper.__index = InputMapper
 
 function InputMapper:new()
   local mapper = {
-    bindings = {},
-    active_modifiers = {
-      k1 = false,
-      k2 = false,
-      k3 = false
-    }
+    bindings = {
+      digital = {},  -- For buttons, keys, digital triggers
+      analog = {},   -- For axes, encoders, analog inputs
+    },
+    active_modifiers = {}
   }
   setmetatable(mapper, self)
   return mapper
 end
 
-function InputMapper:map_norns_controls()
-  -- All keys can act as modifiers
-  self.bindings.keys = {
-    [1] = {
-      [1] = InputBinding:new(InputAction.MODIFIER_K1, 1),
-      [0] = InputBinding:new(InputAction.MODIFIER_K1, 0)
-    },
-    [2] = {
-      [1] = InputBinding:new(InputAction.MODIFIER_K2, 1),
-      [0] = InputBinding:new(InputAction.MODIFIER_K2, 0)
-    },
-    [3] = {
-      [1] = InputBinding:new(InputAction.MODIFIER_K3, 1),
-      [0] = InputBinding:new(InputAction.MODIFIER_K3, 0)
-    }
-  }
-  
-  -- Encoder mappings based on modifier combinations
-  self.bindings.encoders = {
-    [1] = function(delta)
-      if self.active_modifiers.k1 and self.active_modifiers.k2 then
-        return InputBinding:new(InputAction.PAN_X, delta * 0.05)
-      elseif self.active_modifiers.k1 and self.active_modifiers.k3 then
-        return InputBinding:new(InputAction.PAN_Y, delta * 0.05)
-      elseif self.active_modifiers.k1 then
-        return InputBinding:new(InputAction.ORBIT_VERTICAL, delta * 0.1)
-      else
-        return InputBinding:new(InputAction.ORBIT_HORIZONTAL, delta * 0.1)
-      end
-    end,
-    [2] = function(delta)
-      if self.active_modifiers.k1 and self.active_modifiers.k2 then
-        return InputBinding:new(InputAction.ROTATE_X, delta * 0.05)
-      elseif self.active_modifiers.k2 then
-        return InputBinding:new(InputAction.PAN_Z, delta * 0.1)
-      else
-        return InputBinding:new(InputAction.ZOOM, delta * 0.1)
-      end
-    end,
-    [3] = function(delta)
-      if self.active_modifiers.k1 and self.active_modifiers.k3 then
-        return InputBinding:new(InputAction.ROTATE_Z, delta * 0.05)
-      elseif self.active_modifiers.k3 then
-        return InputBinding:new(InputAction.ROTATE_Y, delta * 0.1)
-      else
-        return InputBinding:new(InputAction.ZOOM, delta * -0.1)
-      end
-    end
-  }
+function InputMapper:map_digital(id, state, action, value)
+  if not self.bindings.digital[id] then
+    self.bindings.digital[id] = {}
+  end
+  self.bindings.digital[id][state] = InputBinding:new(action, value or state)
 end
 
-function InputMapper:handle_key(n, z)
-  local binding = self.bindings.keys[n] and self.bindings.keys[n][z]
+function InputMapper:map_analog(id, action, scale)
+  self.bindings.analog[id] = function(value)
+    return InputBinding:new(action, value * (scale or 1.0))
+  end
+end
+
+function InputMapper:handle_digital(id, state)
+  local binding = self.bindings.digital[id] and self.bindings.digital[id][state]
   if binding then
     if binding.action:match("_MODIFIER$") then
       self.active_modifiers[binding.action] = (binding.value ~= 0)
@@ -79,10 +40,10 @@ function InputMapper:handle_key(n, z)
   return nil
 end
 
-function InputMapper:handle_encoder(n, delta)
-  local binding_fn = self.bindings.encoders[n]
+function InputMapper:handle_analog(id, value)
+  local binding_fn = self.bindings.analog[id]
   if binding_fn then
-    return binding_fn(delta)
+    return binding_fn(value)
   end
   return nil
 end

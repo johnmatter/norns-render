@@ -1,26 +1,41 @@
-local Vector = include('lib/Vector')
-local debug = include('lib/util/debug')
+local util = include('lib/util/util')
 
 Camera = {}
 Camera.__index = Camera
 
 function Camera:new(x, y, z)
   local camera = {
-    position = Vector:new(x or 0, y or 0, z or 0),
-    rotation = Vector:new(0, 0, 0),
-    orbital_radius = 20,    -- For orbital camera mode
-    azimuth = 0,           -- Horizontal angle
-    elevation = 0,         -- Vertical angle
-    min_radius = 5,        -- Minimum zoom distance
-    max_radius = 50,       -- Maximum zoom distance
-    rotate_speed = 0.1,    -- Speed for all rotations (both orbital and free)
-    move_speed = 0.5      -- Speed for all movements (both orbital and free)
+    position = { x = x or 0, y = y or 0, z = z or -10 },
+    orbital_mode = true,
+    
+    -- Orbital parameters
+    azimuth = 0,
+    elevation = 0,
+    orbital_radius = 10,
+    
+    -- Free camera parameters
+    pitch = 0,
+    yaw = 0,
+    
+    -- Movement constraints
+    min_radius = 5,
+    max_radius = 50,
+    move_speed = 0.5,
+    rotate_speed = 0.1
   }
   setmetatable(camera, self)
   return camera
 end
 
 function Camera:handle_action(action, value)
+  if self.orbital_mode then
+    return self:handle_orbital_action(action, value)
+  else
+    return self:handle_free_action(action, value)
+  end
+end
+
+function Camera:handle_orbital_action(action, value)
   if action == InputAction.ORBIT_HORIZONTAL then
     self.azimuth = self.azimuth + (value * self.rotate_speed)
     self:update_from_orbital()
@@ -33,22 +48,48 @@ function Camera:handle_action(action, value)
     )
     self:update_from_orbital()
     return true
-  elseif action == InputAction.ZOOM then
+  elseif action == InputAction.ORBIT_ZOOM_IN then
     self.orbital_radius = util.clamp(
-      self.orbital_radius + (value * self.move_speed),
+      self.orbital_radius - self.move_speed,
       self.min_radius,
       self.max_radius
     )
     self:update_from_orbital()
     return true
-  elseif action == InputAction.PAN_X then
-    self.position.x = self.position.x + (value * self.move_speed)
+  elseif action == InputAction.ORBIT_ZOOM_OUT then
+    self.orbital_radius = util.clamp(
+      self.orbital_radius + self.move_speed,
+      self.min_radius,
+      self.max_radius
+    )
+    self:update_from_orbital()
     return true
-  elseif action == InputAction.PAN_Y then
-    self.position.y = self.position.y + (value * self.move_speed)
+  end
+  return false
+end
+
+function Camera:handle_free_action(action, value)
+  if action == InputAction.MOVE_FORWARD then
+    local forward = self:get_forward_vector()
+    self.position = self:add_vectors(self.position, self:scale_vector(forward, value * self.move_speed))
     return true
-  elseif action == InputAction.PAN_Z then
-    self.position.z = self.position.z + (value * self.move_speed)
+  elseif action == InputAction.MOVE_BACKWARD then
+    local forward = self:get_forward_vector()
+    self.position = self:add_vectors(self.position, self:scale_vector(forward, -value * self.move_speed))
+    return true
+  elseif action == InputAction.MOVE_RIGHT then
+    local right = self:get_right_vector()
+    self.position = self:add_vectors(self.position, self:scale_vector(right, value * self.move_speed))
+    return true
+  elseif action == InputAction.ROTATE_YAW then
+    self.yaw = self.yaw + (value * self.rotate_speed)
+    return true
+  elseif action == InputAction.ROTATE_PITCH then
+    self.pitch = util.clamp(
+      self.pitch + (value * self.rotate_speed),
+      -math.pi/2 + 0.1,
+      math.pi/2 - 0.1
+    )
     return true
   end
   return false
@@ -82,14 +123,13 @@ function Camera:set_orbital_params(radius, azimuth, elevation)
 end
 
 function Camera:update_from_orbital()
-  local cos_elevation = math.cos(self.elevation)
-  self.position.x = math.sin(self.azimuth) * cos_elevation * self.orbital_radius
-  self.position.y = math.sin(self.elevation) * self.orbital_radius
-  self.position.z = math.cos(self.azimuth) * cos_elevation * self.orbital_radius
+  -- Convert spherical coordinates to Cartesian
+  self.position.x = self.orbital_radius * math.cos(self.elevation) * math.sin(self.azimuth)
+  self.position.y = self.orbital_radius * math.sin(self.elevation)
+  self.position.z = self.orbital_radius * math.cos(self.elevation) * math.cos(self.azimuth)
   
-  -- Update rotation to look at origin
-  self.rotation.y = self.azimuth + math.pi
-  self.rotation.x = -self.elevation
+  -- Update look direction to always point at origin in orbital mode
+  self.look_at = { x = 0, y = 0, z = 0 }
 end
 
 function Camera:get_view_matrix()
