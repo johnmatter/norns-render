@@ -84,17 +84,6 @@ local redraw_clock
 local input_clock
 
 function init()
-  -- Parameters for camera position
-  params:add_group("3D Scene", 7)
-  params:add_control("cam_x", "Camera X", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
-  params:add_control("cam_y", "Camera Y", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-100, 100, 'lin', 0.01, -20, "", 0.01))
-  
-  -- Parameters for cube rotation
-  params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
-  params:add_control("rot_y", "Rotation Y", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
-  params:add_control("rot_z", "Rotation Z", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
-  
   -- Parameter for cube scale
   params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', 0.01, 1, "", 0.01))
   
@@ -206,25 +195,26 @@ function init()
   update_scene()
   
   -- Initialize input polling clock
-  input_clock = metro.init(function()
-    if active_controller and active_controller.poll then
-      active_controller:poll()
-      update_scene()
+  input_clock = clock.run(function()
+    while true do
+      clock.sleep(1/30) -- 30Hz polling rate
+      if active_controller and active_controller.poll then
+        active_controller:poll()
+        update_scene()
+      end
     end
-  end, 1/30, -1)  -- 30Hz polling rate
+  end)
   
-  input_clock:start()
-  
-  -- Start the redraw clock at the end of init
-  redraw_clock = metro.init(function()
-    local menu_status = norns.menu.status()
-    if not menu_status then
-      -- Only redraw if we're not in the menu
-      redraw()
+  -- Initialize redraw clock
+  redraw_clock = clock.run(function()
+    while true do
+      clock.sleep(1/fps)  -- fps is defined on line 29
+      local menu_status = norns.menu.status()
+      if not menu_status then
+        redraw()
+      end
     end
-  end, 1/fps, -1)  -- fps is 30, -1 means run indefinitely
-  
-  redraw_clock:start()
+  end)
   
   -- Add after cube creation (around line 145)
   debug.log("Cube vertices:", #cube.vertices, "faces:", #cube.faces)
@@ -293,6 +283,10 @@ function redraw()
 end
 
 function cleanup()
-  metro.cancel(redraw_clock)
-  metro.cancel(input_clock)
+  clock.cancel(input_clock)
+  clock.cancel(redraw_clock)
+  -- Stop all LFOs
+  for _, lfo_obj in pairs(rotation_lfos) do
+    lfo_obj:stop()
+  end
 end

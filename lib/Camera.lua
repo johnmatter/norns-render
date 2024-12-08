@@ -10,10 +10,48 @@ function Camera:new(x, y, z)
     rotation = Vector:new(0, 0, 0),
     orbital_radius = 20,    -- For orbital camera mode
     azimuth = 0,           -- Horizontal angle
-    elevation = 0          -- Vertical angle
+    elevation = 0,         -- Vertical angle
+    min_radius = 5,        -- Minimum zoom distance
+    max_radius = 50,       -- Maximum zoom distance
+    rotate_speed = 0.1,    -- Speed for all rotations (both orbital and free)
+    move_speed = 0.5      -- Speed for all movements (both orbital and free)
   }
   setmetatable(camera, self)
   return camera
+end
+
+function Camera:handle_action(action, value)
+  if action == InputAction.ORBIT_HORIZONTAL then
+    self.azimuth = self.azimuth + (value * self.rotate_speed)
+    self:update_from_orbital()
+    return true
+  elseif action == InputAction.ORBIT_VERTICAL then
+    self.elevation = util.clamp(
+      self.elevation + (value * self.rotate_speed),
+      -math.pi/2 + 0.1,
+      math.pi/2 - 0.1
+    )
+    self:update_from_orbital()
+    return true
+  elseif action == InputAction.ZOOM then
+    self.orbital_radius = util.clamp(
+      self.orbital_radius + (value * self.move_speed),
+      self.min_radius,
+      self.max_radius
+    )
+    self:update_from_orbital()
+    return true
+  elseif action == InputAction.PAN_X then
+    self.position.x = self.position.x + (value * self.move_speed)
+    return true
+  elseif action == InputAction.PAN_Y then
+    self.position.y = self.position.y + (value * self.move_speed)
+    return true
+  elseif action == InputAction.PAN_Z then
+    self.position.z = self.position.z + (value * self.move_speed)
+    return true
+  end
+  return false
 end
 
 function Camera:set_position(x, y, z)
@@ -63,33 +101,49 @@ function Camera:get_view_matrix()
   }
 end
 
-function Camera:orbit_horizontal(angle)
-  -- Rotate around Y axis, maintaining distance from origin
-  local rx, ry, rz = self:get_rotation()
-  self:set_rotation(rx, ry + angle, rz)
-  debug.log("Camera orbital rotation:", rx, ry + angle, rz)
+function Camera:move_free(dx, dy, dz, rotation)
+    -- Update camera rotation
+    local rot_x, rot_y = self:get_rotation()
+    rot_y = rot_y + (rotation.y * self.rotate_speed)
+    rot_x = util.clamp(
+        rot_x + (rotation.x * self.rotate_speed),
+        -math.pi/2,
+        math.pi/2
+    )
+    self:set_rotation(rot_x, rot_y, 0)
+    
+    -- Calculate movement vectors based on camera rotation
+    local forward_x = math.sin(rot_y)
+    local forward_z = math.cos(rot_y)
+    local right_x = math.cos(rot_y)
+    local right_z = -math.sin(rot_y)
+    
+    -- Calculate and apply movement deltas
+    local move_dx = (right_x * dx - forward_x * dz) * self.move_speed
+    local move_dy = dy * self.move_speed
+    local move_dz = (right_z * dx - forward_z * dz) * self.move_speed
+    
+    self:set_position(
+        self.position.x + move_dx,
+        self.position.y + move_dy,
+        self.position.z + move_dz
+    )
 end
 
-function Camera:orbit_vertical(angle)
-  -- Rotate around X axis, maintaining distance from origin
-  local rx, ry, rz = self:get_rotation()
-  self:set_rotation(rx + angle, ry, rz)
-  debug.log("Camera orbital rotation:", rx + angle, ry, rz)
-end
-
-function Camera:zoom(distance)
-  -- Move camera closer/further from origin along view direction
-  local x, y, z = self:get_position()
-  local magnitude = math.sqrt(x*x + y*y + z*z)
-  local new_magnitude = magnitude + distance
-  
-  -- Prevent zooming too close or too far
-  if new_magnitude < 5 or new_magnitude > 50 then return end
-  
-  -- Scale position to maintain direction but change distance
-  local scale = new_magnitude / magnitude
-  self:set_position(x * scale, y * scale, z * scale)
-  debug.log("Camera zoom from", magnitude, "to", new_magnitude)
+function Camera:move_orbital(dx, dy, dz, rotation)
+    if rotation.y ~= 0 then
+        self.azimuth = self.azimuth + (rotation.y * self.rotate_speed)
+    end
+    
+    if rotation.x ~= 0 then
+        self.elevation = util.clamp(
+            self.elevation + (rotation.x * self.rotate_speed),
+            -math.pi/2 + 0.1,
+            math.pi/2 - 0.1
+        )
+    end
+    
+    self:update_from_orbital()
 end
 
 return Camera

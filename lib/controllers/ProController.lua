@@ -15,18 +15,25 @@ end
 function ProController:update()
   if not self.connected then return end
   
-  -- Update axes
-  self.axes.left_x = self:read_axis('leftx')
-  self.axes.left_y = self:read_axis('lefty')
-  self.axes.right_x = self:read_axis('rightx')
-  self.axes.right_y = self:read_axis('righty')
+  -- Convert axis values to input bindings
+  local bindings = {}
   
-  -- Map axes to movement and rotation
-  self.movement.x = self.axes.left_x
-  self.movement.y = 0  -- Could map to triggers or shoulder buttons if needed
-  self.movement.z = self.axes.left_y
-  self.rotation.y = self.axes.right_x
-  self.rotation.x = self.axes.right_y
+  -- Left stick controls movement
+  local left_x = self:read_axis('leftx')
+  local left_y = self:read_axis('lefty')
+  if left_x ~= 0 then table.insert(bindings, InputBinding:new(InputAction.PAN_X, left_x)) end
+  if left_y ~= 0 then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, left_y)) end
+  
+  -- Right stick controls rotation
+  local right_x = self:read_axis('rightx')
+  local right_y = self:read_axis('righty')
+  if right_x ~= 0 then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, right_x)) end
+  if right_y ~= 0 then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, right_y)) end
+  
+  -- Apply all bindings
+  for _, binding in ipairs(bindings) do
+    self:handle_input_binding(binding)
+  end
 end
 
 return ProController 

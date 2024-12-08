@@ -32,15 +32,27 @@ function KeyboardController:key_released(key)
 end
 
 function KeyboardController:update_movement_and_rotation()
-  -- Update movement based on WASD + QE
-  self.movement.x = (self.keys.d and 1 or 0) - (self.keys.a and 1 or 0)
-  self.movement.y = (self.keys.e and 1 or 0) - (self.keys.q and 1 or 0)
-  self.movement.z = (self.keys.s and 1 or 0) - (self.keys.w and 1 or 0)
+  -- Convert key states to input bindings
+  local bindings = {}
   
-  -- Update rotation based on IJKL
-  local rotation_amount = 0.1
-  self.rotation.x = (self.keys.k and rotation_amount or 0) - (self.keys.i and rotation_amount or 0)
-  self.rotation.y = (self.keys.l and rotation_amount or 0) - (self.keys.j and rotation_amount or 0)
+  -- Movement bindings
+  if self.keys.w then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, -1)) end
+  if self.keys.s then table.insert(bindings, InputBinding:new(InputAction.PAN_Z, 1)) end
+  if self.keys.a then table.insert(bindings, InputBinding:new(InputAction.PAN_X, -1)) end
+  if self.keys.d then table.insert(bindings, InputBinding:new(InputAction.PAN_X, 1)) end
+  if self.keys.q then table.insert(bindings, InputBinding:new(InputAction.PAN_Y, -1)) end
+  if self.keys.e then table.insert(bindings, InputBinding:new(InputAction.PAN_Y, 1)) end
+  
+  -- Rotation bindings
+  if self.keys.i then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, -0.1)) end
+  if self.keys.k then table.insert(bindings, InputBinding:new(InputAction.ORBIT_VERTICAL, 0.1)) end
+  if self.keys.j then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, -0.1)) end
+  if self.keys.l then table.insert(bindings, InputBinding:new(InputAction.ORBIT_HORIZONTAL, 0.1)) end
+  
+  -- Apply all bindings
+  for _, binding in ipairs(bindings) do
+    self:handle_input_binding(binding)
+  end
 end
 
 return KeyboardController 
