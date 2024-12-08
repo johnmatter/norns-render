@@ -44,13 +44,13 @@ local camera_rotation = { x = 0, y = 0 }
 local active_controller
 local rotation_lfos = {
   x = lfo.new(
-    'sine',           -- shape
-    -0.00,       -- min
-    0.00,        -- max
-    1,                -- depth
-    'free',           -- mode
-    300,               -- period (in seconds)
-    function(scaled, raw)  -- action callback
+    'sine',
+    -0.00,
+    0.00,
+    1,
+    'free',
+    300,
+    function(scaled, raw)
       if cube then
         cube:rotate(scaled, {x = 1, y = 0, z = 0})
       end

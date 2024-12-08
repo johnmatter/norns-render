@@ -65,7 +65,9 @@ function NornsController:update_camera(camera, camera_rotation)
   camera_rotation.y = math.atan2(dx, dz)
   camera_rotation.x = -math.asin(dy/distance)
   
-  return 0, 0  -- No additional movement needed
+  -- Return movement based on key presses
+  local move_speed = 0.5
+  return 0, self.movement.z * move_speed  -- Apply movement in the Z direction
 end
 
 return NornsController 
