@@ -11,6 +11,7 @@ local KeyboardController = include('lib/controllers/KeyboardController')
 local lfo = require('lfo')
 local clock = require('clock')
 local metro = require('metro')
+local debug = include('lib/util/debug')
 
 local camera = { x = 0, y = 0, z = -10 }
 local projection = Projection:new(
@@ -268,6 +269,7 @@ function update_scene()
 end
 
 function key(n, z)
+  debug.log("main key()", n, z)
   if active_controller.key then
     active_controller:key(n, z)
     update_scene()
@@ -275,6 +277,7 @@ function key(n, z)
 end
 
 function enc(n, d)
+  debug.log("main enc()", n, d)
   if active_controller.enc then
     active_controller:enc(n, d)
     update_scene()

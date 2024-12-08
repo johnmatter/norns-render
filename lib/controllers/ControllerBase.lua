@@ -73,4 +73,9 @@ function ControllerBase:update_camera(camera, camera_rotation)
   return dx, dz
 end
 
+function ControllerBase:poll()
+  -- Base implementation does nothing
+  -- Override in derived controllers if needed
+end
+
 return ControllerBase 
