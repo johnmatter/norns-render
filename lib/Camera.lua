@@ -155,8 +155,6 @@ function Camera:move_orbital(dx, dy, dz, rotation)
 end
 
 function Camera:needs_redraw()
-  -- Compare current position/rotation with last rendered position/rotation
-  -- Store these values after each successful render
   if not self.last_render_state then
     self.last_render_state = {
       position = Vector:new(self.position.x, self.position.y, self.position.z),
@@ -168,28 +166,28 @@ function Camera:needs_redraw()
     return true
   end
   
-  local state_changed = 
-    self.position.x ~= self.last_render_state.position.x or
-    self.position.y ~= self.last_render_state.position.y or
-    self.position.z ~= self.last_render_state.position.z or
-    self.rotation.x ~= self.last_render_state.rotation.x or
-    self.rotation.y ~= self.last_render_state.rotation.y or
-    self.rotation.z ~= self.last_render_state.rotation.z or
-    self.orbital_radius ~= self.last_render_state.orbital_radius or
-    self.azimuth ~= self.last_render_state.azimuth or
-    self.elevation ~= self.last_render_state.elevation
-    
-  if state_changed then
-    -- Update last render state
-    self.last_render_state.position:set(self.position.x, self.position.y, self.position.z)
-    self.last_render_state.rotation:set(self.rotation.x, self.rotation.y, self.rotation.z)
-    self.last_render_state.orbital_radius = self.orbital_radius
-    self.last_render_state.azimuth = self.azimuth
-    self.last_render_state.elevation = self.elevation
-    return true
+  return self.position.x ~= self.last_render_state.position.x or
+         self.position.y ~= self.last_render_state.position.y or
+         self.position.z ~= self.last_render_state.position.z or
+         self.rotation.x ~= self.last_render_state.rotation.x or
+         self.rotation.y ~= self.last_render_state.rotation.y or
+         self.rotation.z ~= self.last_render_state.rotation.z or
+         self.orbital_radius ~= self.last_render_state.orbital_radius or
+         self.azimuth ~= self.last_render_state.azimuth or
+         self.elevation ~= self.last_render_state.elevation
+end
+
+function Camera:update_render_state()
+  if not self.last_render_state then
+    self:needs_redraw()  -- Initialize state if needed
+    return
   end
   
-  return false
+  self.last_render_state.position:set(self.position.x, self.position.y, self.position.z)
+  self.last_render_state.rotation:set(self.rotation.x, self.rotation.y, self.rotation.z)
+  self.last_render_state.orbital_radius = self.orbital_radius
+  self.last_render_state.azimuth = self.azimuth
+  self.last_render_state.elevation = self.elevation
 end
 
 return Camera

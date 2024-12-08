@@ -256,12 +256,14 @@ function redraw()
   debug.log("Starting redraw")
   screen.clear()
   
-  -- Verify main_scene has objects
   debug.log("Main scene objects:", #main_scene.objects)
   
   -- Render the scenes
   renderer:render_scene(main_scene)
   renderer:render_scene(overlay_scene)
+  
+  -- Update camera render state after successful render
+  camera:update_render_state()
   
   screen.update()
   debug.log("Completed redraw")
