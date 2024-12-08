@@ -6,23 +6,13 @@ ControllerBase = {}
 ControllerBase.__index = ControllerBase
 
 function ControllerBase:new()
-  local controller = {
-    id = nil,
-    connected = false,
-    deadzone = 0.1,
-    move_speed = 0.5,
-    rotate_speed = 0.05,
-    movement = Vector:new(0, 0, 0),
-    rotation = Vector:new(0, 0, 0),
-    orbital_mode = false,
-    axes = {
-      left_x = 0,
-      left_y = 0,
-      right_x = 0,
-      right_y = 0
-    }
-  }
-  setmetatable(controller, self)
+  local controller = setmetatable({}, ControllerBase)
+  controller.movement = { x = 0, y = 0, z = 0 }
+  controller.rotation = { x = 0, y = 0, z = 0 }
+  controller.move_speed = 0.1
+  controller.rotate_speed = 0.1
+  controller.orbital_mode = false
+  debug.log("ControllerBase:new - Created with movement:", controller.movement, "rotation:", controller.rotation)
   return controller
 end
 

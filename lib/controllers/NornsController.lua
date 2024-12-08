@@ -16,6 +16,7 @@ function NornsController:new()
 end
 
 function NornsController:key(n, z)
+  debug.log("NornsController:key", n, z)
   if n == 1 then
     self.k1_held = z == 1
   elseif n == 2 then
@@ -24,11 +25,15 @@ function NornsController:key(n, z)
     self.k3_held = z == 1
   end
   
+  debug.log("Key states - k1:", self.k1_held, "k2:", self.k2_held, "k3:", self.k3_held)
+  
   -- Update rotation/movement based on key states
   if self.k1_held then
     self.rotation.y = (self.k2_held and -1 or 0) + (self.k3_held and 1 or 0)
+    debug.log("Updated rotation.y to:", self.rotation.y)
   else
     self.movement.z = (self.k2_held and -1 or 0) + (self.k3_held and 1 or 0)
+    debug.log("Updated movement.z to:", self.movement.z)
   end
 end
 

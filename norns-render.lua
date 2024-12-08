@@ -236,9 +236,6 @@ function init()
     debug.log("Vertex", i, ":", v.x, v.y, v.z)
   end
   
-  -- Initialize the active controller (after scene setup)
-  active_controller = NornsController:new()
-  debug.log("Initialized NornsController as active controller")
 end
 
 function update_scene()
