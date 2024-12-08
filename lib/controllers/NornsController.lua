@@ -68,14 +68,8 @@ function NornsController:update_camera(camera, camera_rotation)
   camera_rotation.y = math.atan2(dx, dz)
   camera_rotation.x = -math.asin(dy/distance)
   
-  if DEBUG then 
-    debug.log("Camera position updated to:", camera.x, camera.y, camera.z)
-    debug.log("Camera rotation updated to:", camera_rotation.x, camera_rotation.y)
-  end
-  
-  -- Return movement based on key presses
-  local move_speed = 0.5
-  return 0, self.movement.z * move_speed
+  -- Get movement deltas from base class
+  return ControllerBase.update_camera(self, camera, camera_rotation)
 end
 
 return NornsController

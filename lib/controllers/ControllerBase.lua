@@ -60,7 +60,7 @@ function ControllerBase:update_camera(camera, camera_rotation)
     math.pi/2
   )
   
-  -- Calculate movement vectors
+  -- Calculate movement vectors based on camera rotation
   local forward_x = math.sin(camera_rotation.y)
   local forward_z = math.cos(camera_rotation.y)
   local right_x = math.cos(camera_rotation.y)
@@ -68,9 +68,10 @@ function ControllerBase:update_camera(camera, camera_rotation)
   
   -- Calculate movement deltas
   local dx = (right_x * self.movement.x - forward_x * self.movement.z) * self.move_speed
+  local dy = self.movement.y * self.move_speed  -- Add vertical movement support
   local dz = (right_z * self.movement.x - forward_z * self.movement.z) * self.move_speed
   
-  return dx, dz
+  return dx, dy, dz
 end
 
 function ControllerBase:poll()

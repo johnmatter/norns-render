@@ -231,19 +231,19 @@ function init()
 end
 
 function update_scene()
-  -- Update controller state and get movement
   if active_controller then
     if active_controller.update then
       active_controller:update()
     end
     
-    local success, dx, dz = pcall(function()
+    local success, dx, dy, dz = pcall(function()
       return active_controller:update_camera(camera, camera_rotation)
     end)
     
-    if success and dx and dz then
-      params:set("cam_x", params:get("cam_x") + dx)
-      params:set("cam_z", params:get("cam_z") + dz)
+    if success then
+      if dx then params:set("cam_x", params:get("cam_x") + dx) end
+      if dy then params:set("cam_y", params:get("cam_y") + dy) end
+      if dz then params:set("cam_z", params:get("cam_z") + dz) end
     end
   end
   
@@ -251,6 +251,7 @@ function update_scene()
   camera.x = params:get("cam_x")
   camera.y = params:get("cam_y")
   camera.z = params:get("cam_z")
+  
   -- Update cube scale
   -- cube:set_scale(params:get("scale"))
   
