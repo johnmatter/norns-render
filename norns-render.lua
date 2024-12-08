@@ -230,7 +230,14 @@ function update_scene()
       return active_controller:update_camera(camera)
     end)
     
-    debug.log("Camera update success:", success, "deltas:", dx, dy, dz)
+    if success then
+      if dx and dy and dz then
+        camera.position.x = camera.position.x + dx
+        camera.position.y = camera.position.y + dy
+        camera.position.z = camera.position.z + dz
+      end
+    end
+    debug.log("Camera position:", camera.position.x, camera.position.y, camera.position.z)
   end
 end
 

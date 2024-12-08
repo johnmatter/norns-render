@@ -44,13 +44,24 @@ function NornsController:handle_input_binding(binding)
     return true
   end
   
-  -- Forward camera actions to camera
-  return self.camera:handle_action(binding.action, binding.value)
+  -- Forward camera actions to camera and return movement deltas
+  if self.camera:handle_action(binding.action, binding.value) then
+    -- Return actual position changes
+    return self.camera.position.x - self.last_x,
+           self.camera.position.y - self.last_y,
+           self.camera.position.z - self.last_z
+  end
+  return 0, 0, 0
 end
 
 function NornsController:update_camera(camera)
+  if not self.last_x then
+    self.last_x = camera.position.x
+    self.last_y = camera.position.y
+    self.last_z = camera.position.z
+  end
   self.camera = camera
-  return 0, 0, 0  -- No direct position changes
+  return 0, 0, 0
 end
 
 return NornsController
