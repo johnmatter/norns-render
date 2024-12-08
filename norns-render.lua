@@ -13,7 +13,7 @@ local clock = require('clock')
 local metro = require('metro')
 local debug = include('lib/util/debug')
 
-local camera = { x = 0, y = 0, z = -10 }
+local camera = Camera:new(0, 0, -10)
 local projection = Projection:new(
   128,  -- screen width
   64,   -- screen height
@@ -237,35 +237,21 @@ function update_scene()
     end
     
     local success, dx, dy, dz = pcall(function()
-      return active_controller:update_camera(camera, camera_rotation)
+      return active_controller:update_camera(camera)
     end)
     
     if success then
-      if dx then params:set("cam_x", params:get("cam_x") + dx) end
-      if dy then params:set("cam_y", params:get("cam_y") + dy) end
-      if dz then params:set("cam_z", params:get("cam_z") + dz) end
+      if dx then camera:set_position(camera.position.x + dx, camera.position.y + dy, camera.position.z + dz) end
     end
   end
   
-  -- Update camera position
-  camera.x = params:get("cam_x")
-  camera.y = params:get("cam_y")
-  camera.z = params:get("cam_z")
-  
-  -- Update cube scale
-  -- cube:set_scale(params:get("scale"))
-  
   -- Update parameter display
   if param_names[selected_param] == "pos" then
-    param_display = string.format("pos = %.2f %.2f %.2f", camera.x, camera.y, camera.z)
-  -- elseif param_names[selected_param] == "scale" then
-    -- param_display = string.format("scale = %.2f", params:get("scale"))
+    local x, y, z = camera:get_position()
+    param_display = string.format("pos = %.2f %.2f %.2f", x, y, z)
   elseif param_names[selected_param] == "rotxyz" then
-    param_display = string.format("rotxyz = %.2f %.2f %.2f", 
-      params:get("rot_x"),
-      params:get("rot_y"),
-      params:get("rot_z")
-    )
+    local rx, ry, rz = camera:get_rotation()
+    param_display = string.format("rotxyz = %.2f %.2f %.2f", rx, ry, rz)
   end
 end
 

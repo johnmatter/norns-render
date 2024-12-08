@@ -1,4 +1,5 @@
 local ControllerBase = include('lib/controllers/ControllerBase')
+local Vector = include('lib/Vector')
 
 ProController = {}
 ProController.__index = ProController
@@ -6,6 +7,7 @@ setmetatable(ProController, {__index = ControllerBase})
 
 function ProController:new()
   local controller = ControllerBase:new()
+  controller.orbital_mode = false  -- Gamepad uses free camera by default
   setmetatable(controller, ProController)
   return controller
 end
@@ -21,6 +23,7 @@ function ProController:update()
   
   -- Map axes to movement and rotation
   self.movement.x = self.axes.left_x
+  self.movement.y = 0  -- Could map to triggers or shoulder buttons if needed
   self.movement.z = self.axes.left_y
   self.rotation.y = self.axes.right_x
   self.rotation.x = self.axes.right_y
