@@ -59,9 +59,21 @@ function NornsController:update_camera(camera)
     self.last_x = camera.position.x
     self.last_y = camera.position.y
     self.last_z = camera.position.z
+    return 0, 0, 0
   end
+  
+  -- Calculate actual movement since last update
+  local dx = camera.position.x - self.last_x
+  local dy = camera.position.y - self.last_y
+  local dz = camera.position.z - self.last_z
+  
+  -- Update last positions
+  self.last_x = camera.position.x
+  self.last_y = camera.position.y
+  self.last_z = camera.position.z
+  
   self.camera = camera
-  return 0, 0, 0
+  return dx, dy, dz
 end
 
 return NornsController

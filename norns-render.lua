@@ -210,6 +210,7 @@ function init()
     while true do
       clock.sleep(1/fps)
       local menu_status = norns.menu.status()
+      debug.log("Redraw clock tick, menu_status:", menu_status)
       if not menu_status then
         redraw()
       end
