@@ -6,9 +6,10 @@ local instance = nil
 
 function DebugLog.getInstance()
   if instance == nil then
-    instance = setmetatable({}, DebugLog)
-    instance.timestamp = os.date("%Y%m%d%H%M")
-    instance.filename = string.format("norns-render-debug-%s.txt", instance.timestamp)
+    local obj = setmetatable({}, DebugLog)
+    obj.timestamp = os.date("%Y%m%d%H%M")
+    obj.filename = string.format("norns-render-debug-%s.txt", obj.timestamp)
+    instance = obj
   end
   return instance
 end
@@ -31,5 +32,6 @@ function DebugLog:log(...)
   print(str)
 end
 
--- Return the singleton instance
-return DebugLog.getInstance() 
+-- Create and return the singleton instance
+local debug = DebugLog.getInstance()
+return debug 
