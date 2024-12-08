@@ -32,12 +32,24 @@ function NornsController:key(n, z)
   
   -- Update rotation/movement based on key states
   if self.k1_held then
-    self.rotation.y = (self.k2_held and -1 or 0) + (self.k3_held and 1 or 0)
-    debug.log("Updated rotation.y to:", self.rotation.y)
+    -- When K1 is held, K2/K3 control horizontal orbit
+    self.orbit_speed = (self.k2_held and -0.1 or 0) + (self.k3_held and 0.1 or 0)
+    debug.log("Updated orbit_speed to:", self.orbit_speed)
   else
-    self.movement.z = (self.k2_held and -1 or 0) + (self.k3_held and 1 or 0)
-    debug.log("Updated movement.z to:", self.movement.z)
+    -- When K1 is not held, K2/K3 control zoom
+    self.zoom_speed = (self.k2_held and -0.5 or 0) + (self.k3_held and 0.5 or 0)
+    debug.log("Updated zoom_speed to:", self.zoom_speed)
   end
+end
+
+function NornsController:update_camera(camera)
+  if self.orbit_speed and self.orbit_speed ~= 0 then
+    camera:orbit_horizontal(self.orbit_speed)
+  end
+  if self.zoom_speed and self.zoom_speed ~= 0 then
+    camera:zoom(self.zoom_speed)
+  end
+  return 0, 0, 0  -- No direct position changes
 end
 
 return NornsController

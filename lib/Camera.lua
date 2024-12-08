@@ -63,4 +63,33 @@ function Camera:get_view_matrix()
   }
 end
 
+function Camera:orbit_horizontal(angle)
+  -- Rotate around Y axis, maintaining distance from origin
+  local rx, ry, rz = self:get_rotation()
+  self:set_rotation(rx, ry + angle, rz)
+  debug.log("Camera orbital rotation:", rx, ry + angle, rz)
+end
+
+function Camera:orbit_vertical(angle)
+  -- Rotate around X axis, maintaining distance from origin
+  local rx, ry, rz = self:get_rotation()
+  self:set_rotation(rx + angle, ry, rz)
+  debug.log("Camera orbital rotation:", rx + angle, ry, rz)
+end
+
+function Camera:zoom(distance)
+  -- Move camera closer/further from origin along view direction
+  local x, y, z = self:get_position()
+  local magnitude = math.sqrt(x*x + y*y + z*z)
+  local new_magnitude = magnitude + distance
+  
+  -- Prevent zooming too close or too far
+  if new_magnitude < 5 or new_magnitude > 50 then return end
+  
+  -- Scale position to maintain direction but change distance
+  local scale = new_magnitude / magnitude
+  self:set_position(x * scale, y * scale, z * scale)
+  debug.log("Camera zoom from", magnitude, "to", new_magnitude)
+end
+
 return Camera
