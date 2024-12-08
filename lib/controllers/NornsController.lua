@@ -11,6 +11,9 @@ function NornsController:new()
   controller.k2_held = false
   controller.k3_held = false
   controller.orbital_mode = true  -- Norns uses orbital by default
+  controller.move_speed = 1.0    -- Add explicit move speed
+  controller.rotate_speed = 0.1  -- Add explicit rotate speed
+  debug.log("NornsController:new - move_speed:", controller.move_speed, "rotate_speed:", controller.rotate_speed)
   setmetatable(controller, NornsController)
   return controller
 end

@@ -45,39 +45,45 @@ function ControllerBase:read_axis(axis_name)
 end
 
 function ControllerBase:update_camera(camera)
-  debug.log("ControllerBase:update_camera called, orbital_mode:", self.orbital_mode)
+  debug.log("update_camera movement:", self.movement.x, self.movement.y, self.movement.z)
+  debug.log("update_camera rotation:", self.rotation.x, self.rotation.y, self.rotation.z)
+  debug.log("update_camera move_speed:", self.move_speed)
+  debug.log("update_camera rotate_speed:", self.rotate_speed)
+  
   if self.orbital_mode then
     debug.log("Using orbital camera mode")
-    return self:update_orbital_camera(camera)
+    -- Calculate movement deltas
+    local dx = self.movement.x * self.move_speed
+    local dy = self.movement.y * self.move_speed
+    local dz = self.movement.z * self.move_speed
+    
+    debug.log("Calculated deltas:", dx, dy, dz)
+    
+    return dx, dy, dz
   else
-    debug.log("Using free camera mode")
-    return self:update_free_camera(camera)
+    -- Update camera rotation
+    local rot_x, rot_y = camera:get_rotation()
+    rot_y = rot_y + (self.rotation.y * self.rotate_speed)
+    rot_x = util.clamp(
+      rot_x + (self.rotation.x * self.rotate_speed),
+      -math.pi/2,
+      math.pi/2
+    )
+    camera:set_rotation(rot_x, rot_y, 0)
+    
+    -- Calculate movement vectors based on camera rotation
+    local forward_x = math.sin(rot_y)
+    local forward_z = math.cos(rot_y)
+    local right_x = math.cos(rot_y)
+    local right_z = -math.sin(rot_y)
+    
+    -- Calculate movement deltas
+    local dx = (right_x * self.movement.x - forward_x * self.movement.z) * self.move_speed
+    local dy = self.movement.y * self.move_speed
+    local dz = (right_z * self.movement.x - forward_z * self.movement.z) * self.move_speed
+    
+    return dx, dy, dz
   end
-end
-
-function ControllerBase:update_free_camera(camera)
-  -- Update camera rotation
-  local rot_x, rot_y = camera:get_rotation()
-  rot_y = rot_y + (self.rotation.y * self.rotate_speed)
-  rot_x = util.clamp(
-    rot_x + (self.rotation.x * self.rotate_speed),
-    -math.pi/2,
-    math.pi/2
-  )
-  camera:set_rotation(rot_x, rot_y, 0)
-  
-  -- Calculate movement vectors based on camera rotation
-  local forward_x = math.sin(rot_y)
-  local forward_z = math.cos(rot_y)
-  local right_x = math.cos(rot_y)
-  local right_z = -math.sin(rot_y)
-  
-  -- Calculate movement deltas
-  local dx = (right_x * self.movement.x - forward_x * self.movement.z) * self.move_speed
-  local dy = self.movement.y * self.move_speed
-  local dz = (right_z * self.movement.x - forward_z * self.movement.z) * self.move_speed
-  
-  return dx, dy, dz
 end
 
 function ControllerBase:update_orbital_camera(camera)
