@@ -24,7 +24,7 @@ local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(camera, projection, light)
 
 -- Frame rate throttling
-local fps = 15
+local fps = 30
 local last_redraw = 0
 
 -- Create scenes for different purposes
@@ -44,11 +44,11 @@ local active_controller
 local rotation_lfos = {
   x = lfo.new(
     'sine',           -- shape
-    -math.pi/4,       -- min
-    math.pi/4,        -- max
+    -0.00,       -- min
+    0.00,        -- max
     1,                -- depth
     'free',           -- mode
-    10,               -- period (in seconds)
+    300,               -- period (in seconds)
     function(scaled, raw)  -- action callback
       if cube then
         cube:rotate(scaled, {x = 1, y = 0, z = 0})
@@ -57,11 +57,11 @@ local rotation_lfos = {
   ),
   y = lfo.new(
     'sine',
-    -math.pi/4,
-    math.pi/4,
+    -0.00,
+    0.00,
     1,
     'free',
-    8,
+    300,
     function(scaled, raw)
       if cube then
         cube:rotate(scaled, {x = 0, y = 1, z = 0})
@@ -70,11 +70,11 @@ local rotation_lfos = {
   ),
   z = lfo.new(
     'sine',
-    -math.pi/4,
-    math.pi/4,
+    -0.00,
+    0.00,
     1,
     'free',
-    20,
+    280,
     function(scaled, raw)
       if cube then
         cube:rotate(scaled, {x = 0, y = 0, z = 1})
@@ -89,7 +89,7 @@ function init()
   params:add_group("3D Scene", 7)
   params:add_control("cam_x", "Camera X", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
   params:add_control("cam_y", "Camera Y", controlspec.new(-100, 100, 'lin', 0.01, 0, "", 0.01))
-  params:add_control("cam_z", "Camera Z", controlspec.new(-100, 100, 'lin', 0.01, -10, "", 0.01))
+  params:add_control("cam_z", "Camera Z", controlspec.new(-100, 100, 'lin', 0.01, -20, "", 0.01))
   
   -- Parameters for cube rotation
   params:add_control("rot_x", "Rotation X", controlspec.new(-math.pi, math.pi, 'lin', 0.01, 0, "rad", 0.01))
@@ -240,13 +240,13 @@ function update_scene()
   camera.y = params:get("cam_y")
   camera.z = params:get("cam_z")
   -- Update cube scale
-  cube:set_scale(params:get("scale"))
+  -- cube:set_scale(params:get("scale"))
   
   -- Update parameter display
   if param_names[selected_param] == "pos" then
     param_display = string.format("pos = %.2f %.2f %.2f", camera.x, camera.y, camera.z)
-  elseif param_names[selected_param] == "scale" then
-    param_display = string.format("scale = %.2f", params:get("scale"))
+  -- elseif param_names[selected_param] == "scale" then
+    -- param_display = string.format("scale = %.2f", params:get("scale"))
   elseif param_names[selected_param] == "rotxyz" then
     param_display = string.format("rotxyz = %.2f %.2f %.2f", 
       params:get("rot_x"),
@@ -273,13 +273,9 @@ end
 function redraw()
   screen.clear()
   
-  -- Update main scene at main_scene_fps
-  local current_time = util.time()
-  if current_time - last_main_update >= (1 / main_scene_fps) then
-    renderer:render_scene(main_scene)
-    last_main_update = current_time
-  end
-  update_scene()
+  -- Render the scenes
+  renderer:render_scene(main_scene)
+  renderer:render_scene(overlay_scene)
   
   -- Draw parameter text
   screen.move(1, 7)
