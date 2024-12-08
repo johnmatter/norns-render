@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Scene = {}
 Scene.__index = Scene
 

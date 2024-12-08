@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Renderer = {}
 Renderer.__index = Renderer
 

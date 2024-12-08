@@ -1,5 +1,6 @@
 local gamepad = require('gamepad')
 local Vector = include('lib/Vector')
+local debug = include('lib/util/debug')
 
 ControllerBase = {}
 ControllerBase.__index = ControllerBase

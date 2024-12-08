@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Shape = {}
 Shape.__index = Shape
 

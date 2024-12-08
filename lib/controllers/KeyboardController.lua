@@ -1,5 +1,5 @@
 local ControllerBase = include('lib/controllers/ControllerBase')
-local Vector = include('lib/Vector')
+local debug = include('lib/util/debug')  -- Added debug require
 
 KeyboardController = {}
 KeyboardController.__index = KeyboardController

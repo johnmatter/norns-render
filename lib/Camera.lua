@@ -1,4 +1,5 @@
 local Vector = include('lib/Vector')
+local debug = include('lib/util/debug')
 
 Camera = {}
 Camera.__index = Camera

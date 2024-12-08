@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Light = {}
 Light.__index = Light
 

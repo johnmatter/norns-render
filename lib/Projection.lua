@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Projection = {}
 Projection.__index = Projection
 

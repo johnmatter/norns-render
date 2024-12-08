@@ -1,3 +1,5 @@
+local debug = include('lib/util/debug')
+
 Vector = {}
 Vector.__index = Vector
 
