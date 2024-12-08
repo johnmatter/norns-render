@@ -55,9 +55,12 @@ function ControllerBase:read_axis(axis_name)
 end
 
 function ControllerBase:update_camera(camera)
+  debug.log("ControllerBase:update_camera called, orbital_mode:", self.orbital_mode)
   if self.orbital_mode then
+    debug.log("Using orbital camera mode")
     return self:update_orbital_camera(camera)
   else
+    debug.log("Using free camera mode")
     return self:update_free_camera(camera)
   end
 end

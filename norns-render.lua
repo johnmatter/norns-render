@@ -26,7 +26,7 @@ local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(camera, projection, light)
 
 -- Frame rate throttling
-local fps = 30
+local fps = 5
 local last_redraw = 0
 
 -- Create scenes for different purposes
@@ -235,6 +235,10 @@ function init()
   for i, v in ipairs(cube.vertices) do
     debug.log("Vertex", i, ":", v.x, v.y, v.z)
   end
+  
+  -- Initialize the active controller (after scene setup)
+  active_controller = NornsController:new()
+  debug.log("Initialized NornsController as active controller")
 end
 
 function update_scene()
@@ -273,7 +277,8 @@ end
 
 function key(n, z)
   debug.log("main key()", n, z)
-  if active_controller.key then
+  if active_controller and active_controller.key then
+    debug.log("Forwarding key event to controller")
     active_controller:key(n, z)
     update_scene()
   end
@@ -281,7 +286,8 @@ end
 
 function enc(n, d)
   debug.log("main enc()", n, d)
-  if active_controller.enc then
+  if active_controller and active_controller.enc then
+    debug.log("Forwarding encoder event to controller")
     active_controller:enc(n, d)
     update_scene()
   end
