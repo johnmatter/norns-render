@@ -1,6 +1,9 @@
 local ControllerBase = include('lib/controllers/ControllerBase')
 local debug = include('lib/util/debug')
 
+-- Add debug flag
+local DEBUG = true
+
 NornsController = {}
 NornsController.__index = NornsController
 setmetatable(NornsController, {__index = ControllerBase})
@@ -12,13 +15,13 @@ function NornsController:new()
   controller.orbital_radius = 20  -- Distance from origin
   controller.orbital_angle = 0    -- Angle around Y axis
   controller.height = 0           -- Height above origin
-  debug.log("NornsController:new() created")
+  if DEBUG then debug.log("NornsController:new() created") end
   setmetatable(controller, NornsController)
   return controller
 end
 
 function NornsController:key(n, z)
-  debug.log("NornsController:key()", n, z)
+  if DEBUG then debug.log("NornsController:key()", n, z) end
   if n == 2 then
     self.k2_held = z == 1
   elseif n == 3 then
@@ -27,24 +30,24 @@ function NornsController:key(n, z)
   
   -- Update forward/backward movement
   self.movement.z = (self.k2_held and -1 or 0) + (self.k3_held and 1 or 0)
-  debug.log("movement.z updated to:", self.movement.z)
+  if DEBUG then debug.log("movement.z updated to:", self.movement.z) end
 end
 
 function NornsController:enc(n, d)
-  debug.log("NornsController:enc()", n, d)
+  if DEBUG then debug.log("NornsController:enc()", n, d) end
   if n == 2 then
     -- Rotate around origin
     self.orbital_angle = self.orbital_angle + (d * 0.1)
-    debug.log("orbital_angle updated to:", self.orbital_angle)
+    if DEBUG then debug.log("orbital_angle updated to:", self.orbital_angle) end
   elseif n == 3 then
-    -- Adjust height
-    self.height = util.clamp(self.height + (d * 0.5), -20, 20)
-    debug.log("height updated to:", self.height)
+    -- Adjust orbital radius instead of height
+    self.orbital_radius = util.clamp(self.orbital_radius + (d * 0.5), 5, 40)
+    if DEBUG then debug.log("orbital_radius updated to:", self.orbital_radius) end
   end
 end
 
 function NornsController:poll()
-  if self.k2_held or self.k3_held then
+  if (self.k2_held or self.k3_held) and DEBUG then
     debug.log("NornsController:poll() - keys held:", self.k2_held, self.k3_held)
   end
 end
@@ -65,9 +68,14 @@ function NornsController:update_camera(camera, camera_rotation)
   camera_rotation.y = math.atan2(dx, dz)
   camera_rotation.x = -math.asin(dy/distance)
   
+  if DEBUG then 
+    debug.log("Camera position updated to:", camera.x, camera.y, camera.z)
+    debug.log("Camera rotation updated to:", camera_rotation.x, camera_rotation.y)
+  end
+  
   -- Return movement based on key presses
   local move_speed = 0.5
-  return 0, self.movement.z * move_speed  -- Apply movement in the Z direction
+  return 0, self.movement.z * move_speed
 end
 
-return NornsController 
+return NornsController
