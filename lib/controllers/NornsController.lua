@@ -9,10 +9,9 @@ setmetatable(NornsController, {__index = ControllerBase})
 
 function NornsController:new()
   local controller = ControllerBase:new()
-  controller.input_mapper = InputMapper:new()
   controller.orbital_mode = true
   setmetatable(controller, NornsController)
-  self:setup_orbital_mode_mappings()
+  controller:setup_orbital_mode_mappings()
   return controller
 end
 

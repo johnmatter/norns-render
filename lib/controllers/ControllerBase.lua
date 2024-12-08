@@ -1,14 +1,19 @@
 local gamepad = require('gamepad')
 local Vector = include('lib/Vector')
 local debug = include('lib/util/debug')
+local InputMapper = include('lib/input/InputMapper')
+local InputAction = include('lib/input/InputAction')
 
 ControllerBase = {}
 ControllerBase.__index = ControllerBase
 
 function ControllerBase:new()
-  local controller = setmetatable({}, ControllerBase)
-  controller.orbital_mode = false
-  controller.camera = nil
+  local controller = {
+    camera = nil,
+    input_mapper = InputMapper:new(),
+    orbital_mode = true
+  }
+  setmetatable(controller, ControllerBase)
   return controller
 end
 
@@ -46,11 +51,20 @@ function ControllerBase:poll()
 end
 
 function ControllerBase:handle_input_binding(binding)
-  -- Base implementation forwards to camera
-  if self.camera then
-    return self.camera:handle_action(binding.action, binding.value)
+  if not self.camera then return false end
+  
+  if binding.action == InputAction.TOGGLE_ORBITAL then
+    self.orbital_mode = not self.orbital_mode
+    if self.orbital_mode then
+      self:setup_orbital_mode_mappings()
+    else
+      self:setup_free_mode_mappings()
+    end
+    self.camera.orbital_mode = self.orbital_mode
+    return true
   end
-  return false
+  
+  return self.camera:handle_action(binding.action, binding.value)
 end
 
 return ControllerBase 

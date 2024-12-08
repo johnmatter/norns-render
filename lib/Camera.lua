@@ -1,4 +1,4 @@
-local util = include('lib/util/util')
+local debug = include('lib/util/debug')
 
 Camera = {}
 Camera.__index = Camera
@@ -9,21 +9,21 @@ function Camera:new(x, y, z)
     orbital_mode = true,
     
     -- Orbital parameters
+    orbital_radius = 10,
     azimuth = 0,
     elevation = 0,
-    orbital_radius = 10,
     
     -- Free camera parameters
-    pitch = 0,
     yaw = 0,
+    pitch = 0,
     
     -- Movement constraints
     min_radius = 5,
     max_radius = 50,
-    move_speed = 0.5,
+    move_speed = 0.1,
     rotate_speed = 0.1
   }
-  setmetatable(camera, self)
+  setmetatable(camera, Camera)
   return camera
 end
 

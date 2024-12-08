@@ -7,11 +7,10 @@ setmetatable(KeyboardController, {__index = ControllerBase})
 
 function KeyboardController:new()
   local controller = ControllerBase:new()
-  controller.input_mapper = InputMapper:new()
   controller.orbital_mode = true
   controller.keys = {}
   setmetatable(controller, KeyboardController)
-  self:setup_orbital_mode_mappings()
+  controller:setup_orbital_mode_mappings()
   return controller
 end
 
