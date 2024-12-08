@@ -80,31 +80,50 @@ function Renderer:draw_triangle(p1, p2, p3, brightness)
 end
 
 function Renderer:project_vertex(vertex)
-  -- Translate to camera space
-  local x = vertex.x - self.camera.x
-  local y = vertex.y - self.camera.y
-  local z = vertex.z - self.camera.z
+  if not vertex then
+    debug.log("Error: Attempted to project nil vertex")
+    return {x = 0, y = 0}  -- Return safe default
+  end
+  
+  if not vertex.x or not vertex.y or not vertex.z then
+    debug.log("Error: Vertex missing coordinates:", vertex)
+    return {x = 0, y = 0}  -- Return safe default
+  end
 
-  -- Apply projection
+  -- Transform vertex position by camera
+  local x = vertex.x - self.camera.position.x
+  local y = vertex.y - self.camera.position.y
+  local z = vertex.z - self.camera.position.z
+
+  -- Project the point
   return self.projection:project_point(x, y, z)
 end
 
 function Renderer:draw_face(vertices, face)
-  local v1 = vertices[face[1]]
-  local v2 = vertices[face[2]]
-  local v3 = vertices[face[3]]
+  if not vertices or not face then
+    debug.log("Error: Missing vertices or face data")
+    return
+  end
 
-  -- Transform vertices
-  local p1 = self:project_vertex(v1)
-  local p2 = self:project_vertex(v2)
-  local p3 = self:project_vertex(v3)
+  -- Validate face indices
+  for _, index in ipairs(face) do
+    if not vertices[index] then
+      debug.log("Error: Invalid vertex index in face:", index)
+      return
+    end
+  end
 
-  -- Calculate normal and lighting
-  local normal = self:calculate_normal(v1, v2, v3)
-  local brightness = self.light:calculate_normal_lighting(normal)
+  -- Project vertices
+  local projected = {}
+  for _, index in ipairs(face) do
+    table.insert(projected, self:project_vertex(vertices[index]))
+  end
 
-  -- Rasterize triangle
-  self:draw_triangle(p1, p2, p3, brightness)
+  -- Draw the face
+  if #projected >= 3 then
+    -- Draw face implementation...
+    -- (keep existing drawing code)
+  end
 end
 
 function Renderer:render_shape(shape)

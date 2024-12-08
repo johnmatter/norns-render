@@ -229,6 +229,12 @@ function init()
   end, 1/fps, -1)  -- fps is 30, -1 means run indefinitely
   
   redraw_clock:start()
+  
+  -- Add after cube creation (around line 145)
+  debug.log("Cube vertices:", #cube.vertices, "faces:", #cube.faces)
+  for i, v in ipairs(cube.vertices) do
+    debug.log("Vertex", i, ":", v.x, v.y, v.z)
+  end
 end
 
 function update_scene()
