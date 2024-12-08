@@ -30,16 +30,13 @@ function NornsController:key(n, z)
   
   debug.log("Key states - k1:", self.k1_held, "k2:", self.k2_held, "k3:", self.k3_held)
   
-  -- Update rotation/movement based on key states
-  if self.k1_held then
-    -- When K1 is held, K2/K3 control horizontal orbit
-    self.orbit_speed = (self.k2_held and -0.1 or 0) + (self.k3_held and 0.1 or 0)
-    debug.log("Updated orbit_speed to:", self.orbit_speed)
-  else
-    -- When K1 is not held, K2/K3 control zoom
-    self.zoom_speed = (self.k2_held and -0.5 or 0) + (self.k3_held and 0.5 or 0)
-    debug.log("Updated zoom_speed to:", self.zoom_speed)
-  end
+  self.zoom_speed = (self.k2_held and -0.5 or 0) + (self.k3_held and 0.5 or 0)
+  debug.log("Updated zoom_speed to:", self.zoom_speed)
+end
+
+function NornsController:enc(n, d)
+  self.orbit_speed = (self.k2_held and -0.1 or 0) + (self.k3_held and 0.1 or 0)
+  debug.log("Updated orbit_speed to:", self.orbit_speed)
 end
 
 function NornsController:update_camera(camera)

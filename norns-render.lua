@@ -38,10 +38,6 @@ local last_main_update = 0
 
 -- Add after other local variables
 local cube
-local selected_param = 1
-local param_names = {"pos", "scale", "rotxyz"}
-local param_display = ""
-local camera_rotation = { x = 0, y = 0 }
 local active_controller
 local rotation_lfos = {
   x = lfo.new(
@@ -261,15 +257,6 @@ function update_scene()
       end
     end
   end
-  
-  -- Update parameter display
-  if param_names[selected_param] == "pos" then
-    local x, y, z = camera:get_position()
-    param_display = string.format("pos = %.2f %.2f %.2f", x, y, z)
-  elseif param_names[selected_param] == "rotxyz" then
-    local rx, ry, rz = camera:get_rotation()
-    param_display = string.format("rotxyz = %.2f %.2f %.2f", rx, ry, rz)
-  end
 end
 
 function key(n, z)
@@ -300,11 +287,6 @@ function redraw()
   -- Render the scenes
   renderer:render_scene(main_scene)
   renderer:render_scene(overlay_scene)
-  
-  -- Draw parameter text
-  screen.move(1, 7)
-  screen.level(5)
-  screen.text(param_display)
   
   screen.update()
   debug.log("Completed redraw")
