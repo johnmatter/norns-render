@@ -1,7 +1,6 @@
 local gamepad = require('gamepad')
 local Light = include("lib/Light")
 local Renderer = include("lib/Renderer")
-local Shape = include("lib/Shape")
 local Vector = include("lib/Vector")
 local Scene = include("lib/Scene")
 local Projection = include("lib/Projection")
@@ -13,9 +12,10 @@ local lfo = require('lfo')
 local clock = require('clock')
 local metro = require('metro')
 local debug = include('lib/util/debug')
+
 local DEBUG_LOGGING_ENABLED = false
 
-local camera = Camera:new(0, 0, -10)
+local camera = Camera:new(0, 0, -20)
 local projection = Projection:new(
   128,  -- screen width
   64,   -- screen height
@@ -38,49 +38,7 @@ local main_scene_fps = 15
 local last_main_update = 0
 
 -- Add after other local variables
-local cube
 local active_controller
-local rotation_lfos = {
-  x = lfo.new(
-    'sine',
-    -math.pi,
-    math.pi,
-    0,
-    'free',
-    300,
-    function(scaled, raw)
-      if cube then
-        cube:rotate(scaled, {x = 1, y = 0, z = 0})
-      end
-    end
-  ),
-  y = lfo.new(
-    'sine',
-    -math.pi,
-    math.pi,
-    0,
-    'free',
-    300,
-    function(scaled, raw)
-      if cube then
-        cube:rotate(scaled, {x = 0, y = 1, z = 0})
-      end
-    end
-  ),
-  z = lfo.new(
-    'sine',
-    -math.pi,
-    math.pi,
-    0,
-    'free',
-    280,
-    function(scaled, raw)
-      if cube then
-        cube:rotate(scaled, {x = 0, y = 0, z = 1})
-      end
-    end
-  )
-}
 redraw_metro = nil
 input_clock = nil
 
@@ -95,22 +53,24 @@ function init()
   
   -- Add to parameters group first
   params:add_option("control_scheme", "Control Scheme", {"Norns", "Keyboard", "Gamepad"}, 1)
-  params:set_action("control_scheme", function(value)
-    if value == 2 then
-      set_active_controller(KeyboardController:new())
-    elseif value == 3 then
-      set_active_controller(ProController:new())
-    else
-      set_active_controller(NornsController:new())
+  params:set_action("control_scheme",
+    function(value)
+      if value == 2 then
+        set_active_controller(KeyboardController:new())
+      elseif value == 3 then
+        set_active_controller(ProController:new())
+      else
+        set_active_controller(NornsController:new())
+      end
     end
-  end)
+  )
   
   -- Initialize with Norns controller by default
   set_active_controller(NornsController:new())
   
   -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
-  -- Register connect callback
+    -- Register connect callback
     gamepad.connect = function(id)
       debug.log("Gamepad " .. id .. " connected")
       if active_controller.connect and params:get("control_scheme") == 3 then
@@ -127,73 +87,41 @@ function init()
     end
   end
   
-  -- Create cube and scenes as before
-  cube = Shape:new(
-    {
-      { x = -3, y = -3, z = -3 },
-      { x =  3, y = -3, z = -3 },
-      { x =  3, y =  3, z = -3 },
-      { x = -3, y =  3, z = -3 },
-      { x = -3, y = -3, z =  3 },
-      { x =  3, y = -3, z =  3 },
-      { x =  3, y =  3, z =  3 },
-      { x = -3, y =  3, z =  3 },
-    },
-    {
-      { 1, 2, 3, 4 }, -- Back face
-      { 5, 6, 7, 8 }, -- Front face
-      { 1, 2, 6, 5 }, -- Left face
-      { 4, 3, 7, 8 }, -- Right face
-      { 1, 4, 8, 5 }, -- Top face
-      { 2, 3, 7, 6 }, -- Bottom face
-    }
-  )
+  -- Create geometric objects
+  local Geom = include('lib/Geoms/Geom')
+  local Cube = include('lib/Geoms/Cube')
+  local Cylinder = include('lib/Geoms/Cylinder')
+  local Sphere = include('lib/Geoms/Sphere')
+  local PlatonicSolid = include('lib/Geoms/PlatonicSolid')
   
-  -- Add cube to main scene
-  main_scene:add(cube)
+  -- Arrange objects on a 3x3 grid
+  local grid_size = 10
+  local spacing = 8
+  for i = 0, 2 do
+    for j = 0, 2 do
+      local x = (i - 1) * spacing
+      local y = (j - 1) * spacing
+      
+      -- Alternate between different Geom types
+      local geom_type = (i * 3 + j) % 4
+      local geom
+      if geom_type == 0 then
+        geom = Cube:new(2)
+      elseif geom_type == 1 then
+        geom = Cylinder:new(1, 3, 16)
+      elseif geom_type == 2 then
+        geom = Sphere:new(1.5, 16, 16)
+      elseif geom_type == 3 then
+        geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
+      end
+      
+      geom:translate(Vector:new(x, y, 0))
+      main_scene:add(geom)
+    end
+  end
   
-  -- Set different render styles for different scenes
+  -- Set render styles
   main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
-  -- overlay_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
-  
-  -- Setup LFOs for cube rotation
-  params:add_group("Rotation LFOs", 9)
-  
-  -- X rotation LFO
-  params:add_option("lfo_x_shape", "X LFO Shape", {"sine", "tri", "square", "random"}, 1)
-  params:add_control("lfo_x_freq", "X LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.01, 'hz'))
-  params:add_control("lfo_x_depth", "X LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
-  
-  -- Y rotation LFO
-  params:add_option("lfo_y_shape", "Y LFO Shape", {"sine", "tri", "square", "random"}, 1)
-  params:add_control("lfo_y_freq", "Y LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.015, 'hz'))
-  params:add_control("lfo_y_depth", "Y LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
-  
-  -- Z rotation LFO
-  params:add_option("lfo_z_shape", "Z LFO Shape", {"sine", "tri", "square", "random"}, 1)
-  params:add_control("lfo_z_freq", "Z LFO Freq", controlspec.new(0.001, 0.1, 'exp', 0.001, 0.02, 'hz'))
-  params:add_control("lfo_z_depth", "Z LFO Depth", controlspec.new(0, math.pi, 'lin', 0.1, math.pi/4, 'rad'))
-  
-  -- Configure LFOs
-  for axis, lfo_obj in pairs(rotation_lfos) do
-    lfo_obj:add_params("rot_" .. axis)  -- Add params with unique ID
-    lfo_obj:start()  -- Start the LFO
-  end
-  
-  -- Modify LFO parameter actions
-  for axis in pairs(rotation_lfos) do
-    params:set_action("lfo_"..axis.."_shape", function(value)
-      rotation_lfos[axis].shape = value
-    end)
-    params:set_action("lfo_"..axis.."_freq", function(value)
-      rotation_lfos[axis].period = 1/value
-    end)
-    params:set_action("lfo_"..axis.."_depth", function(value)
-      rotation_lfos[axis].depth = value
-    end)
-  end
-  
-  update_scene()
   
   -- Initialize input polling clock
   input_clock = clock.run(function()
@@ -220,11 +148,10 @@ function init()
   redraw_metro:start()
   
   -- Log cube details
-  debug.log("Cube vertices:", #cube.vertices, "faces:", #cube.faces)
-  for i, v in ipairs(cube.vertices) do
-    debug.log("Vertex", i, ":", v.x, v.y, v.z)
+  debug.log("Main scene objects:", #main_scene.objects)
+  for i, obj in ipairs(main_scene.objects) do
+    debug.log(string.format("Object %d: Type=%s, Position=(%f, %f, %f)", i, obj.type or "Geom", obj.position.x, obj.position.y, obj.position.z))
   end
-  
 end
 
 function update_scene()
@@ -233,25 +160,7 @@ function update_scene()
     if active_controller.update then
       active_controller:update()
     end
-    debug.log("Camera position:", camera.position.x, camera.position.y, camera.position.z)
-  end
-end
-
-function key(n, z)
-  debug.log("main key()", n, z)
-  if active_controller and active_controller.key then
-    debug.log("Forwarding key event to controller")
-    active_controller:key(n, z)
-    update_scene()
-  end
-end
-
-function enc(n, d)
-  debug.log("main enc()", n, d)
-  if active_controller and active_controller.enc then
-    debug.log("Forwarding encoder event to controller")
-    active_controller:enc(n, d)
-    update_scene()
+    debug.log(string.format("Camera position: (%f, %f, %f)", camera.position.x, camera.position.y, camera.position.z))
   end
 end
 
@@ -281,13 +190,27 @@ end
 function cleanup()
   clock.cancel(input_clock)
   redraw_metro:stop()
-  -- Stop all LFOs
-  for _, lfo_obj in pairs(rotation_lfos) do
-    lfo_obj:stop()
-  end
 end
 
 function set_active_controller(new_controller)
   active_controller = new_controller
   active_controller.camera = camera
+end
+
+function key(n, z)
+  if DEBUG_LOGGING_ENABLED then debug.log("main key()", n, z) end
+  if active_controller and active_controller.key then
+    if DEBUG_LOGGING_ENABLED then debug.log("Forwarding key event to controller") end
+    active_controller:key(n, z)
+    update_scene()
+  end
+end
+
+function enc(n, d)
+  if DEBUG_LOGGING_ENABLED then debug.log("main enc()", n, d) end
+  if active_controller and active_controller.enc then
+    if DEBUG_LOGGING_ENABLED then debug.log("Forwarding encoder event to controller") end
+    active_controller:enc(n, d)
+    update_scene()
+  end
 end
