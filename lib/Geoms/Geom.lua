@@ -1,6 +1,7 @@
 local debug = include('lib/util/debug')
 local Vector = include('lib/Vector')
 local math = require('math')
+local Mesh = include('lib/Mesh')
 
 Geom = {}
 Geom.__index = Geom
@@ -43,7 +44,7 @@ function Geom:rotate(scaled, axis)
   if axis.z then
     self.rotation.z = self.rotation.z + scaled * axis.z
   end
-  debug.log(string.format("Rotated Geom to angles (x=%.2f, y=%.2f, z=%.2f)", 
+  debug.log(string.format("Rotated Geom to angles (x=%.2f°, y=%.2f°, z=%.2f°)", 
     math.deg(self.rotation.x), math.deg(self.rotation.y), math.deg(self.rotation.z)))
 end
 
@@ -58,7 +59,7 @@ function Geom:scale_geom(factor)
   debug.log(string.format("Scaled Geom by a factor of %.2f", factor))
 end
 
--- Helper function to rotate a point around the X-axis
+-- Helper functions to rotate a point around each axis
 local function rotate_x(vertex, angle)
   local cos = math.cos(angle)
   local sin = math.sin(angle)
@@ -69,7 +70,6 @@ local function rotate_x(vertex, angle)
   }
 end
 
--- Helper function to rotate a point around the Y-axis
 local function rotate_y(vertex, angle)
   local cos = math.cos(angle)
   local sin = math.sin(angle)
@@ -80,7 +80,6 @@ local function rotate_y(vertex, angle)
   }
 end
 
--- Helper function to rotate a point around the Z-axis
 local function rotate_z(vertex, angle)
   local cos = math.cos(angle)
   local sin = math.sin(angle)
@@ -94,7 +93,7 @@ end
 -- Get the transformed (global) vertices after applying scaling, rotation, and translation
 function Geom:get_transformed_vertices()
   local transformed = {}
-  for i, vertex in ipairs(self.vertices) do
+  for _, vertex in ipairs(self.vertices) do
     local v = {
       x = vertex.x * self.scale,
       y = vertex.y * self.scale,
@@ -114,6 +113,12 @@ function Geom:get_transformed_vertices()
     table.insert(transformed, v)
   end
   return transformed
+end
+
+-- Render method to return a Mesh instance with transformed vertices
+function Geom:render()
+  local transformed_vertices = self:get_transformed_vertices()
+  return Mesh:new(transformed_vertices, self.faces)
 end
 
 return Geom
