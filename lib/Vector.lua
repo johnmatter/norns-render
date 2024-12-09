@@ -3,10 +3,43 @@ local debug = include('lib/util/debug')
 Vector = {}
 Vector.__index = Vector
 
+-- Metamethod for addition
+function Vector.__add(a, b)
+    return Vector:new(a.x + b.x, a.y + b.y, a.z + b.z)
+end
+
+-- Metamethod for subtraction
+function Vector.__sub(a, b)
+    return Vector:new(a.x - b.x, a.y - b.y, a.z - b.z)
+end
+
+-- Metamethod for multiplication by a scalar
+function Vector.__mul(a, scalar)
+    if type(scalar) == "number" then
+        return Vector:new(a.x * scalar, a.y * scalar, a.z * scalar)
+    else
+        error("Attempt to multiply Vector by a non-number")
+    end
+end
+
+-- Metamethod for division by a scalar
+function Vector.__div(a, scalar)
+    if type(scalar) == "number" then
+        return Vector:new(a.x / scalar, a.y / scalar, a.z / scalar)
+    else
+        error("Attempt to divide Vector by a non-number")
+    end
+end
+
+-- Optional: Metamethod for tostring for easier debugging
+function Vector:__tostring()
+    return string.format("Vector(x=%.2f, y=%.2f, z=%.2f)", self.x, self.y, self.z)
+end
+
 function Vector:new(x, y, z)
-  local vector = { x = x, y = y, z = z }
-  setmetatable(vector, self)
-  return vector
+    local v = {x = x or 0, y = y or 0, z = z or 0}
+    setmetatable(v, self)
+    return v
 end
 
 function Vector:cross(other)
