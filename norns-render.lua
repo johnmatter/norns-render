@@ -8,7 +8,6 @@ local Camera = include("lib/Camera")
 local ProController = include('lib/controllers/ProController')
 local NornsController = include('lib/controllers/NornsController')
 local KeyboardController = include('lib/controllers/KeyboardController')
-local lfo = require('lfo')
 local clock = require('clock')
 local metro = require('metro')
 local debug = include('lib/util/debug')
@@ -38,43 +37,8 @@ local overlay_scene = Scene:new()
 local main_scene_fps = 15
 local last_main_update = 0
 
--- Controllers and LFOs
+-- Controllers
 local active_controller
-local rotation_lfos = {
-    x = lfo.new(
-        'sine',
-        -math.pi,
-        math.pi,
-        0,
-        'free',
-        300,
-        function(scaled, raw)
-            -- Rotation logic can be implemented here if needed
-        end
-    ),
-    y = lfo.new(
-        'sine',
-        -math.pi,
-        math.pi,
-        0,
-        'free',
-        300,
-        function(scaled, raw)
-            -- Rotation logic can be implemented here if needed
-        end
-    ),
-    z = lfo.new(
-        'sine',
-        -math.pi,
-        math.pi,
-        0,
-        'free',
-        280,
-        function(scaled, raw)
-            -- Rotation logic can be implemented here if needed
-        end
-    )
-}
 redraw_metro = nil
 input_clock = nil
 
@@ -238,10 +202,6 @@ end
 function cleanup()
     clock.cancel(input_clock)
     redraw_metro:stop()
-    -- Stop all LFOs
-    for _, lfo_obj in pairs(rotation_lfos) do
-        lfo_obj:stop()
-    end
 end
 
 -- Set active controller
