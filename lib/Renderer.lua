@@ -1,5 +1,6 @@
 local debug = include('lib/util/debug')
 local Mesh = include('lib/Mesh')  -- Ensure Mesh class is included
+local RenderStyle = include('lib/RenderStyle')
 local math = require('math')
 
 Renderer = {}
@@ -10,7 +11,7 @@ function Renderer:new(camera, projection, light)
         camera = camera,
         projection = projection,
         light = light,
-        render_style = 'WIREFRAME'  -- Default render style
+        render_style = RenderStyle.WIREFRAME  -- Default render style
     }
     setmetatable(renderer, self)
     return renderer
@@ -49,36 +50,96 @@ function Renderer:project_vertex(vertex)
     return {x = screen_x, y = screen_y}
 end
 
--- Draw a face based on projected vertices
-function Renderer:draw_face(projected_vertices, face)
-    if not projected_vertices or not face then
-        debug.log("Error: Missing projected vertices or face data")
-        return
+-- Draw WIREFRAME style
+function Renderer:draw_wireframe(projected_vertices, face)
+    for i = 1, #face do
+        local current_index = face[i]
+        local next_index = face[(i % #face) + 1]
+        if projected_vertices[current_index] and projected_vertices[next_index] then
+            screen.line(projected_vertices[current_index].x, projected_vertices[current_index].y,
+                       projected_vertices[next_index].x, projected_vertices[next_index].y)
+        end
     end
+    screen.stroke()
+end
 
-    -- Depending on render style, draw lines or filled polygons
-    if self.render_style == 'WIREFRAME' then
-        for i = 1, #face do
-            local current_index = face[i]
-            local next_index = face[(i % #face) + 1]
-            if projected_vertices[current_index] and projected_vertices[next_index] then
-                screen.line(projected_vertices[current_index].x, projected_vertices[current_index].y,
-                           projected_vertices[next_index].x, projected_vertices[next_index].y)
+-- Draw FILLED style (Simple polygon fill by outlining for demonstration)
+function Renderer:draw_filled(projected_vertices, face)
+    -- Note: Norns does not natively support filled polygons.
+    -- This is a placeholder for actual filled polygon rendering.
+    for i = 1, #face do
+        local current_index = face[i]
+        local next_index = face[(i % #face) + 1]
+        if projected_vertices[current_index] and projected_vertices[next_index] then
+            screen.line(projected_vertices[current_index].x, projected_vertices[current_index].y,
+                       projected_vertices[next_index].x, projected_vertices[next_index].y)
+        end
+    end
+    screen.stroke()
+end
+
+-- Draw DASHED style
+function Renderer:draw_dashed(projected_vertices, face)
+    local dash_length = 5
+    local gap_length = 3
+
+    for i = 1, #face do
+        local current_index = face[i]
+        local next_index = face[(i % #face) + 1]
+        if projected_vertices[current_index] and projected_vertices[next_index] then
+            local x1, y1 = projected_vertices[current_index].x, projected_vertices[current_index].y
+            local x2, y2 = projected_vertices[next_index].x, projected_vertices[next_index].y
+            local dx = x2 - x1
+            local dy = y2 - y1
+            local distance = math.sqrt(dx * dx + dy * dy)
+            local steps = math.floor(distance / (dash_length + gap_length))
+            for step = 0, steps - 1 do
+                local start_x = x1 + (dx / distance) * (step * (dash_length + gap_length))
+                local start_y = y1 + (dy / distance) * (step * (dash_length + gap_length))
+                local end_x = start_x + (dx / distance) * dash_length
+                local end_y = start_y + (dy / distance) * dash_length
+                screen.line(start_x, start_y, end_x, end_y)
             end
         end
-        screen.stroke()
-    elseif self.render_style == 'SOLID' then
-        -- Filled polygon rendering is more complex and might require a custom implementation
-        -- For simplicity, we'll outline the polygon
-        for i = 1, #face do
-            local current_index = face[i]
-            local next_index = face[(i % #face) + 1]
-            if projected_vertices[current_index] and projected_vertices[next_index] then
-                screen.line(projected_vertices[current_index].x, projected_vertices[current_index].y,
-                           projected_vertices[next_index].x, projected_vertices[next_index].y)
+    end
+    screen.stroke()
+end
+
+-- Draw DITHERED style
+function Renderer:draw_dithered(projected_vertices, face)
+    -- Simple dithering by alternating line intensities
+    for i = 1, #face do
+        local current_index = face[i]
+        local next_index = face[(i % #face) + 1]
+        if projected_vertices[current_index] and projected_vertices[next_index] then
+            if i % 2 == 0 then
+                screen.level(5)  -- Dim line
+            else
+                screen.level(15) -- Bright line
             end
+            screen.line(projected_vertices[current_index].x, projected_vertices[current_index].y,
+                       projected_vertices[next_index].x, projected_vertices[next_index].y)
         end
-        screen.stroke()
+    end
+    screen.stroke()
+end
+
+-- Draw EXPR style using Shader (Procedural Rendering)
+function Renderer:draw_shader(projected_vertices, face)
+    -- Placeholder for procedural rendering
+    -- Example: Varying line thickness based on face index
+    for i = 1, #face do
+        local current_index = face[i]
+        local next_index = face[(i % #face) + 1]
+        if projected_vertices[current_index] and projected_vertices[next_index] then
+            local thickness = (i % 3) + 1  -- Vary thickness between 1 to 3
+            screen.level(15 - thickness)    -- Vary brightness
+            screen.move(projected_vertices[current_index].x, projected_vertices[current_index].y)
+            screen.line(projected_vertices[next_index].x, projected_vertices[next_index].y)
+            screen.stroke_width(thickness)
+            screen.stroke()
+            screen.stroke_width(1)  -- Reset to default
+        end
     end
 end
 
@@ -90,7 +151,7 @@ function Renderer:render_mesh(mesh)
     end
 
     for _, face in ipairs(mesh.faces) do
-        self:draw_face(mesh.transformed_vertices, face)
+        self.render_style.draw_face(self, mesh.transformed_vertices, face)
     end
 end
 
