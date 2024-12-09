@@ -102,7 +102,7 @@ function init()
   -- geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
 
   geom = Cylinder:new(1, 3, 16)
-  geom:translate(Vector:new(x, y, 0))
+  geom:translate(Vector:new(0, 0, 0))
   main_scene:add(geom)
 
   
@@ -130,11 +130,21 @@ function init()
     end
   end
 
-  redraw_metro = metro.init(redraw_event, 1/fps)
+  -- Try to get a metro from the pool
+  redraw_metro = metro.init()
   if redraw_metro then
+    redraw_metro.event = redraw_event
+    redraw_metro.time = 1/fps
     redraw_metro:start()
   else
-    debug.log("Failed to initialize redraw metro")
+    print("ERROR: No metros available in pool")
+    -- Fallback to a clock-based redraw
+    redraw_clock = clock.run(function()
+      while true do
+        clock.sleep(1/fps)
+        redraw_event()
+      end
+    end)
   end
   
   -- Log scene details
@@ -187,8 +197,18 @@ end
 
 -- Cleanup function
 function cleanup()
-  clock.cancel(input_clock)
-  redraw_metro:stop()
+  -- Cancel the input clock
+  if input_clock then
+    clock.cancel(input_clock)
+    input_clock = nil
+  end
+  
+  -- Stop and free the redraw metro
+  if redraw_metro then
+    redraw_metro:stop()
+    redraw_metro:free()
+    redraw_metro = nil
+  end
 end
 
 -- Set active controller
