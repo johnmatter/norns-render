@@ -80,8 +80,8 @@ local rotation_lfos = {
     end
   )
 }
-local redraw_clock
-local input_clock
+redraw_clock = nil
+input_clock = nil
 
 function init()
   -- Parameter for cube scale
@@ -210,7 +210,9 @@ function init()
   redraw_clock = clock.run(function()
     debug.log("Redraw clock started")
     while true do
+      debug.log("Redraw loop: before sleep")
       clock.sleep(1/fps)
+      debug.log("Redraw loop: woke up")
       local menu_status = norns.menu.status()
       debug.log("Redraw clock tick, menu_status:", menu_status)
       if not menu_status then
