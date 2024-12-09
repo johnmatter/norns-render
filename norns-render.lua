@@ -122,16 +122,20 @@ function init()
   end)
   
   -- Initialize redraw metro
-  redraw_metro = metro.init()
-  redraw_metro.event = function()
+  local redraw_event = function()
     local menu_status = norns.menu.status()
     debug.log("Redraw metro tick, menu_status:", menu_status)
     if not menu_status then
       redraw()
     end
   end
-  redraw_metro.time = 1/fps
-  redraw_metro:start()
+
+  redraw_metro = metro.init(redraw_event, 1/fps)
+  if redraw_metro then
+    redraw_metro:start()
+  else
+    debug.log("Failed to initialize redraw metro")
+  end
   
   -- Log scene details
   if DEBUG_LOGGING_ENABLED then
