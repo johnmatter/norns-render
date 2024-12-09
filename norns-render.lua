@@ -12,6 +12,7 @@ local lfo = require('lfo')
 local clock = require('clock')
 local metro = require('metro')
 local debug = include('lib/util/debug')
+local RenderStyle = include('lib/RenderStyle')
 
 local DEBUG_LOGGING_ENABLED = false
 
@@ -157,7 +158,7 @@ function init()
     end
     
     -- Set render styles
-    main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
+    main_scene:set_render_style(RenderStyle.WIREFRAME)
     
     -- Initialize input polling clock
     input_clock = clock.run(function()
