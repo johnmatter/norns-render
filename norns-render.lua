@@ -26,7 +26,7 @@ local light = Light:new({ x = 0, y = 0, z = -1 }, 0.2, 0.8)
 local renderer = Renderer:new(camera, projection, light)
 
 -- Frame rate throttling
-local fps = 5
+local fps = 30
 local last_redraw = 0
 
 -- Create scenes for different purposes
@@ -42,9 +42,9 @@ local active_controller
 local rotation_lfos = {
   x = lfo.new(
     'sine',
-    -0.00,
-    0.00,
-    1,
+    -math.pi,
+    math.pi,
+    0,
     'free',
     300,
     function(scaled, raw)
@@ -55,9 +55,9 @@ local rotation_lfos = {
   ),
   y = lfo.new(
     'sine',
-    -0.00,
-    0.00,
-    1,
+    -math.pi,
+    math.pi,
+    0,
     'free',
     300,
     function(scaled, raw)
@@ -68,9 +68,9 @@ local rotation_lfos = {
   ),
   z = lfo.new(
     'sine',
-    -0.00,
-    0.00,
-    1,
+    -math.pi,
+    math.pi,
+    0,
     'free',
     280,
     function(scaled, raw)
@@ -109,7 +109,7 @@ function init()
   
   -- Setup gamepad callback only if user switches to gamepad mode
   if gamepad then
-    -- Register connect callback
+  -- Register connect callback
     gamepad.connect = function(id)
       debug.log("Gamepad " .. id .. " connected")
       if active_controller.connect and params:get("control_scheme") == 3 then
@@ -196,6 +196,7 @@ function init()
   
   -- Initialize input polling clock
   input_clock = clock.run(function()
+    debug.log("Input clock started")
     while true do
       clock.sleep(1/30) -- 30Hz polling rate
       if active_controller and active_controller.poll then
@@ -207,6 +208,7 @@ function init()
   
   -- Initialize redraw clock
   redraw_clock = clock.run(function()
+    debug.log("Redraw clock started")
     while true do
       clock.sleep(1/fps)
       local menu_status = norns.menu.status()
@@ -254,20 +256,26 @@ function enc(n, d)
 end
 
 function redraw()
-  debug.log("Starting redraw")
-  screen.clear()
+  local success, err = pcall(function()
+    debug.log("Starting redraw")
+    screen.clear()
+    
+    debug.log("Main scene objects:", #main_scene.objects)
+    
+    -- Render the scenes
+    renderer:render_scene(main_scene)
+    -- renderer:render_scene(overlay_scene)
+    
+    -- Update camera render state after successful render
+    camera:update_render_state()
+    
+    screen.update()
+    debug.log("Completed redraw")
+  end)
   
-  debug.log("Main scene objects:", #main_scene.objects)
-  
-  -- Render the scenes
-  renderer:render_scene(main_scene)
-  -- renderer:render_scene(overlay_scene)
-  
-  -- Update camera render state after successful render
-  camera:update_render_state()
-  
-  screen.update()
-  debug.log("Completed redraw")
+  if not success then
+    debug.log("Error in redraw:", err)
+  end
 end
 
 function cleanup()
