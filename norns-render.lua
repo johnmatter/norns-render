@@ -37,11 +37,11 @@ local overlay_scene = Scene:new()
 local main_scene_fps = 15
 local last_main_update = 0
 
--- Add after other local variables
 local active_controller
 redraw_metro = nil
 input_clock = nil
 
+-- init
 function init()
   -- Parameter for cube scale
   params:add_control("scale", "Scale", controlspec.new(0.1, 5, 'lin', 0.01, 1, "", 0.01))
@@ -147,23 +147,31 @@ function init()
   redraw_metro.time = 1/fps
   redraw_metro:start()
   
-  -- Log cube details
-  debug.log("Main scene objects:", #main_scene.objects)
-  for i, obj in ipairs(main_scene.objects) do
-    debug.log(string.format("Object %d: Type=%s, Position=(%f, %f, %f)", i, obj.type or "Geom", obj.position.x, obj.position.y, obj.position.z))
+  -- Log scene details
+  if DEBUG_LOGGING_ENABLED then
+    debug.log("Main scene objects:", #main_scene.objects)
+    for i, obj in ipairs(main_scene.objects) do
+      debug.log(string.format("Object %d: Type=%s, Position=%s", 
+        i, 
+        obj.type or "Geom", 
+        tostring(obj.position)
+      ))
+    end
   end
 end
 
+-- Update scene based on controller inputs
 function update_scene()
   if active_controller then
     -- Controller updates camera directly through input bindings
     if active_controller.update then
       active_controller:update()
     end
-    debug.log(string.format("Camera position: (%f, %f, %f)", camera.position.x, camera.position.y, camera.position.z))
+    debug.log(string.format("Camera position: %s", tostring(camera.position)))
   end
 end
 
+-- Redraw function
 function redraw()
   local success, err = pcall(function()
     debug.log("Starting redraw")
@@ -187,16 +195,19 @@ function redraw()
   end
 end
 
+-- Cleanup function
 function cleanup()
   clock.cancel(input_clock)
   redraw_metro:stop()
 end
 
+-- Set active controller
 function set_active_controller(new_controller)
   active_controller = new_controller
   active_controller.camera = camera
 end
 
+-- Key event handler
 function key(n, z)
   if DEBUG_LOGGING_ENABLED then debug.log("main key()", n, z) end
   if active_controller and active_controller.key then
@@ -206,6 +217,7 @@ function key(n, z)
   end
 end
 
+-- Encoder event handler
 function enc(n, d)
   if DEBUG_LOGGING_ENABLED then debug.log("main enc()", n, d) end
   if active_controller and active_controller.enc then
