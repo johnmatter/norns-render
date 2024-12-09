@@ -5,6 +5,8 @@ DebugLog.__index = DebugLog
 local instance = nil
 
 local function log(...)
+  if not DEBUG_LOGGING_ENABLED then return end  -- Exit if logging is disabled
+
   local args = {...}
   local str = ""
   for i, v in ipairs(args) do
