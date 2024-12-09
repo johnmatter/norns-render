@@ -34,6 +34,16 @@ InputAction = {
   ORBIT_ZOOM_OUT = "orbit_zoom_out",
   ORBIT_ZOOM_IN = "orbit_zoom_in",
   ORBIT_ZOOM = "orbit_zoom",
+  
+  -- Macro actions for script-specific functionality
+  MACRO_1 = "macro_1",
+  MACRO_2 = "macro_2",
+  MACRO_3 = "macro_3",
+  MACRO_4 = "macro_4",
+  
+  -- Shape control
+  CYCLE_SHAPE = "cycle_shape",
+  RANDOM_ROTATE = "random_rotate"
 }
 
 return InputAction 

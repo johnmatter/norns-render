@@ -41,6 +41,70 @@ local active_controller
 redraw_metro = nil
 input_clock = nil
 
+-- Add at the top with other local variables
+local current_shape_index = 1
+local shapes = {
+  "cube",
+  "cylinder", 
+  "sphere",
+  "tetrahedron",
+  "octahedron"
+}
+
+-- Add this function to create a new shape
+function create_shape(shape_type)
+  local Geom = include('lib/Geoms/Geom')
+  local Cube = include('lib/Geoms/Cube')
+  local Cylinder = include('lib/Geoms/Cylinder')
+  local Sphere = include('lib/Geoms/Sphere')
+  local PlatonicSolid = include('lib/Geoms/PlatonicSolid')
+  
+  if shape_type == "cube" then
+    return Cube:new(2)
+  elseif shape_type == "cylinder" then
+    return Cylinder:new(1, 3, 16)
+  elseif shape_type == "sphere" then
+    return Sphere:new(1.5, 16, 16)
+  elseif shape_type == "tetrahedron" then
+    return PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
+  elseif shape_type == "octahedron" then
+    return PlatonicSolid:new(PlatonicSolid.Types.OCTAHEDRON, 2)
+  end
+end
+
+-- Add these functions to handle the new actions
+function cycle_shape()
+  current_shape_index = (current_shape_index % #shapes) + 1
+  main_scene.objects = {}  -- Clear existing objects
+  local new_shape = create_shape(shapes[current_shape_index])
+  new_shape:translate(Vector:new(0, 0, 0))
+  main_scene:add(new_shape)
+end
+
+function random_rotate()
+  if #main_scene.objects > 0 then
+    local shape = main_scene.objects[1]
+    shape:rotate(math.random() * math.pi * 2, math.random() * math.pi * 2, math.random() * math.pi * 2)
+  end
+end
+
+-- Modify the handle_action function in Camera.lua to handle these new actions
+function Camera:handle_action(action, value)
+  if action == InputAction.CYCLE_SHAPE then
+    cycle_shape()
+    return true
+  elseif action == InputAction.RANDOM_ROTATE then
+    random_rotate()
+    return true
+  end
+  
+  if self.orbital_mode then
+    return self:handle_orbital_action(action, value)
+  else
+    return self:handle_free_action(action, value)
+  end
+end
+
 -- init
 function init()
   -- Parameter for cube scale
@@ -101,9 +165,9 @@ function init()
   -- geom = Sphere:new(1.5, 16, 16)
   -- geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
 
-  geom = Cylinder:new(1, 3, 16)
-  geom:translate(Vector:new(0, 0, 0))
-  main_scene:add(geom)
+  local initial_shape = create_shape(shapes[current_shape_index])
+  initial_shape:translate(Vector:new(0, 0, 0))
+  main_scene:add(initial_shape)
 
   
   -- Set render styles

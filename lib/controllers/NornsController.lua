@@ -19,8 +19,8 @@ function NornsController:setup_orbital_mode_mappings()
   -- Map Norns keys (digital inputs)
   self.input_mapper:map_digital("key1", 1, InputAction.MODIFIER_K1, 1)
   self.input_mapper:map_digital("key1", 0, InputAction.MODIFIER_K1, 0)
-  self.input_mapper:map_digital("key2", 1, InputAction.ORBIT_ZOOM_OUT)
-  self.input_mapper:map_digital("key3", 1, InputAction.ORBIT_ZOOM_IN)
+  self.input_mapper:map_digital("key2", 1, InputAction.CYCLE_SHAPE)
+  self.input_mapper:map_digital("key3", 1, InputAction.RANDOM_ROTATE)
   
   -- Add mode toggle when K1+K2+K3 are pressed
   self.input_mapper:map_digital("key1+key2+key3", 1, InputAction.TOGGLE_ORBITAL)
