@@ -80,7 +80,7 @@ local rotation_lfos = {
     end
   )
 }
-redraw_clock = nil
+redraw_metro = nil
 input_clock = nil
 
 function init()
@@ -206,20 +206,17 @@ function init()
     end
   end)
   
-  -- Initialize redraw clock
-  redraw_clock = clock.run(function()
-    debug.log("Redraw clock started")
-    while true do
-      debug.log("Redraw loop: before sleep")
-      clock.sleep(1/fps)
-      debug.log("Redraw loop: woke up")
-      local menu_status = norns.menu.status()
-      debug.log("Redraw clock tick, menu_status:", menu_status)
-      if not menu_status then
-        redraw()
-      end
+  -- Initialize redraw metro
+  redraw_metro = metro.init()
+  redraw_metro.event = function()
+    local menu_status = norns.menu.status()
+    debug.log("Redraw metro tick, menu_status:", menu_status)
+    if not menu_status then
+      redraw()
     end
-  end)
+  end
+  redraw_metro.time = 1/fps
+  redraw_metro:start()
   
   -- Log cube details
   debug.log("Cube vertices:", #cube.vertices, "faces:", #cube.faces)
@@ -282,7 +279,7 @@ end
 
 function cleanup()
   clock.cancel(input_clock)
-  clock.cancel(redraw_clock)
+  redraw_metro:stop()
   -- Stop all LFOs
   for _, lfo_obj in pairs(rotation_lfos) do
     lfo_obj:stop()
