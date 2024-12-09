@@ -94,31 +94,17 @@ function init()
   local Sphere = include('lib/Geoms/Sphere')
   local PlatonicSolid = include('lib/Geoms/PlatonicSolid')
   
-  -- Arrange objects on a 3x3 grid
-  local grid_size = 10
-  local spacing = 8
-  for i = 0, 2 do
-    for j = 0, 2 do
-      local x = (i - 1) * spacing
-      local y = (j - 1) * spacing
-      
-      -- Alternate between different Geom types
-      local geom_type = (i * 3 + j) % 4
-      local geom
-      if geom_type == 0 then
-        geom = Cube:new(2)
-      elseif geom_type == 1 then
-        geom = Cylinder:new(1, 3, 16)
-      elseif geom_type == 2 then
-        geom = Sphere:new(1.5, 16, 16)
-      elseif geom_type == 3 then
-        geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
-      end
-      
-      geom:translate(Vector:new(x, y, 0))
-      main_scene:add(geom)
-    end
-  end
+  -- Arrange objects
+
+  -- geom = Cube:new(2)
+  -- geom = main_scene:add(Cylinder:new(1, 3, 16))
+  -- geom = Sphere:new(1.5, 16, 16)
+  -- geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
+
+  geom = Cylinder:new(1, 3, 16)
+  geom:translate(Vector:new(x, y, 0))
+  main_scene:add(geom)
+
   
   -- Set render styles
   main_scene:set_render_style(Renderer.RenderStyle.WIREFRAME)
