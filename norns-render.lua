@@ -111,7 +111,7 @@ function init()
   if gamepad then
     -- Register connect callback
     gamepad.connect = function(id)
-      print("gamepad " .. id .. " connected")
+      debug.log("Gamepad " .. id .. " connected")
       if active_controller.connect and params:get("control_scheme") == 3 then
         active_controller:connect(id)
       end
@@ -119,7 +119,7 @@ function init()
     
     -- Register disconnect callback
     gamepad.disconnect = function(id)
-      print("gamepad " .. id .. " disconnected")
+      debug.log("Gamepad " .. id .. " disconnected")
       if active_controller.disconnect and params:get("control_scheme") == 3 then
         active_controller:disconnect()
       end
@@ -217,7 +217,7 @@ function init()
     end
   end)
   
-  -- Add after cube creation (around line 145)
+  -- Log cube details
   debug.log("Cube vertices:", #cube.vertices, "faces:", #cube.faces)
   for i, v in ipairs(cube.vertices) do
     debug.log("Vertex", i, ":", v.x, v.y, v.z)

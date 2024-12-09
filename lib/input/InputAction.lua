@@ -22,7 +22,17 @@ InputAction = {
   MODIFIER_K1 = "modifier_k1",
   MODIFIER_K2 = "modifier_k2",
   MODIFIER_K3 = "modifier_k3",
-  PRECISION = "precision"
+  PRECISION = "precision",
+  
+  -- Movement
+  MOVE_RIGHT = "move_right",
+  MOVE_FORWARD = "move_forward",
+  ROTATE_YAW = "rotate_yaw",
+  ROTATE_PITCH = "rotate_pitch",
+  
+  -- Zoom
+  ORBIT_ZOOM_OUT = "orbit_zoom_out",
+  ORBIT_ZOOM_IN = "orbit_zoom_in"
 }
 
 return InputAction 

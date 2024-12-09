@@ -51,6 +51,7 @@ function ControllerBase:poll()
 end
 
 function ControllerBase:handle_input_binding(binding)
+  debug.log("ControllerBase:handle_input_binding called with action:", binding.action, "value:", binding.value)
   if not self.camera then return false end
   
   if binding.action == InputAction.TOGGLE_ORBITAL then
@@ -61,10 +62,13 @@ function ControllerBase:handle_input_binding(binding)
       self:setup_free_mode_mappings()
     end
     self.camera.orbital_mode = self.orbital_mode
+    debug.log("Orbital mode toggled to:", self.orbital_mode)
     return true
   end
   
-  return self.camera:handle_action(binding.action, binding.value)
+  local result = self.camera:handle_action(binding.action, binding.value)
+  debug.log("Camera handle_action returned:", result)
+  return result
 end
 
 return ControllerBase 
