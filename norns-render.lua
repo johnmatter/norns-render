@@ -14,7 +14,7 @@ local metro = require('metro')
 local debug = include('lib/util/debug')
 local RenderStyle = include('lib/RenderStyle')
 
-local DEBUG_LOGGING_ENABLED = false
+local DEBUG_LOGGING_ENABLED = true
 
 local camera = Camera:new(0, 0, -20)
 local projection = Projection:new(
@@ -133,11 +133,11 @@ function init()
     
     -- Arrange objects on a 3x3 grid
     local grid_size = 10
-    local spacing = 8
+    local spacing = 20
     for i = 0, 2 do
         for j = 0, 2 do
-            local x = (i - 1) * spacing
-            local y = (j - 1) * spacing
+            local x = (i * spacing) - spacing
+            local y = (j * spacing) - spacing
             
             -- Alternate between different Geom types
             local geom_type = (i * 3 + j) % 4
@@ -152,7 +152,7 @@ function init()
                 geom = PlatonicSolid:new(PlatonicSolid.Types.TETRAHEDRON, 2)
             end
             
-            geom:translate(Vector:new(x, y, 0))
+            geom:translate(Vector:new(x, y, 20))
             main_scene:add(geom)
         end
     end
