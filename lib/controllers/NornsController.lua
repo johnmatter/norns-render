@@ -26,6 +26,7 @@ function NornsController:setup_orbital_mode_mappings()
   self.input_mapper:map_digital("key1+key2+key3", 1, InputAction.TOGGLE_ORBITAL)
   
   -- Map encoders (analog inputs)
+  self.input_mapper:map_analog("enc1", InputAction.ORBIT_ZOOM, 1.0)
   self.input_mapper:map_analog("enc2", InputAction.ORBIT_HORIZONTAL, 1.0)
   self.input_mapper:map_analog("enc3", InputAction.ORBIT_VERTICAL, 1.0)
 end

@@ -32,7 +32,8 @@ InputAction = {
   
   -- Zoom
   ORBIT_ZOOM_OUT = "orbit_zoom_out",
-  ORBIT_ZOOM_IN = "orbit_zoom_in"
+  ORBIT_ZOOM_IN = "orbit_zoom_in",
+  ORBIT_ZOOM = "orbit_zoom",
 }
 
 return InputAction 

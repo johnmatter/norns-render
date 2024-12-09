@@ -55,6 +55,10 @@ function Camera:handle_orbital_action(action, value)
     self.orbital_radius = util.clamp(self.orbital_radius + self.move_speed, self.min_radius, self.max_radius)
     self:update_from_orbital()
     return true
+  elseif action == InputAction.ORBIT_ZOOM then
+    self.orbital_radius = util.clamp(self.orbital_radius + value * self.move_speed, self.min_radius, self.max_radius)
+    self:update_from_orbital()
+    return true
   end
   return false
 end
